@@ -1,0 +1,1 @@
+# 2026-promocao-natal-teste-02
