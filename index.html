@@ -13,7 +13,7 @@ body{margin:0;min-height:100vh;color:#fff;font-family:Montserrat,system-ui,sans-
 .camera{position:relative;width:min(100%,430px);max-width:430px;aspect-ratio:9/16;margin:auto;overflow:hidden;border-radius:24px;background:#111;border:3px solid #facc15aa;box-shadow:0 20px 60px #0006}
 video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}.overlay{position:absolute;inset:0;pointer-events:none}
 .baker{position:absolute;right:2%;bottom:1%;width:50%;max-height:92%;object-fit:contain;filter:drop-shadow(0 10px 12px #0008)}
-.top{display:none;position:absolute;top:5%;left:5%;right:5%;text-align:center;text-shadow:0 3px 8px #0009}.msg{font-size:clamp(18px,3.5vw,34px);font-weight:800}
+.top{display:none !important;position:absolute;top:5%;left:5%;right:5%;text-align:center;text-shadow:0 3px 8px #0009}.msg{font-size:clamp(18px,3.5vw,34px);font-weight:800}
 .pill{display:inline-block;margin:6px 3px 0;padding:6px 12px;border-radius:999px;background:#0008;font-weight:700;font-size:clamp(12px,2vw,18px)}
 .capture{width:78px;height:78px;border-radius:50%;background:#fff;border:7px solid #ffffff77;box-shadow:0 6px 25px #0006}
 .btn{transition:.2s}.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}.modal{background:#000b;backdrop-filter:blur(5px)}
@@ -24,7 +24,7 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
 <div class="snow" id="snow"></div>
 <main class="min-h-screen px-4 py-5">
 <header class="max-w-5xl mx-auto flex justify-between items-center mb-5"><div><div class="text-xs uppercase tracking-[.25em] opacity-80">Experiência de Natal</div><h1 class="script text-5xl">Selfie de Natal 🎄</h1></div><button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button></header>
-<section class="max-w-5xl mx-auto"><div class="text-center mb-5"><h2 id="title" class="text-2xl sm:text-3xl font-extrabold"></h2><p class="mt-2 opacity-90">Enquadre-se na câmera vertical e fique ao lado da nossa boleira.</p></div>
+<section class="max-w-5xl mx-auto"><div class="text-center mb-5"><h2 id="title" class="text-2xl sm:text-3xl font-extrabold"></h2><p class="mt-2 opacity-90">Enquadre-se na câmera vertical. A parte de cima ficará livre para a carta de Natal.</p></div>
 <div class="camera"><video id="video" autoplay playsinline muted></video><div class="overlay"><div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-black/35 text-white/90 text-[11px] font-semibold backdrop-blur-sm">Enquadre-se aqui 📸</div><div class="top"><div id="message" class="msg"></div><span id="handle" class="pill"></span><span id="hashtag" class="pill"></span></div><img id="baker" class="baker" alt="Boleira"></div>
 <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center"><div><div class="text-5xl">📸</div><h3 class="font-bold text-xl mt-2">Vamos tirar sua foto?</h3><p class="text-sm opacity-90">Autorize a câmera frontal. A foto será vertical (9:16).</p><button id="start" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold">Ativar câmera</button><p id="camError" class="text-sm text-yellow-200 mt-3"></p></div></div></div>
 <div class="flex justify-center items-center gap-5 mt-5"><button id="flip" class="btn glass rounded-full w-12 h-12 text-xl">↔️</button><button id="capture" class="capture"></button></div>
@@ -53,18 +53,37 @@ async function load(){if(sb){try{let{data,error}=await sb.from('configuracoes').
 async function save(s){s.handle=handle(s.handle);s.hashtag=hashtag(s.hashtag);if(sb){let{error}=await sb.from('configuracoes').upsert({cliente_id:CLIENTE_ID,handle:s.handle,hashtag:s.hashtag,title:s.title,message:s.message,image:s.image,updated_at:new Date().toISOString()},{onConflict:'cliente_id'});if(error)throw error}else localStorage.setItem('natal_config_'+CLIENTE_ID,JSON.stringify(s));apply(s)}
 async function camera(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:960}},audio:false});$('video').srcObject=stream;$('video').classList.toggle('mirror',facing==='user');$('prompt').classList.add('hidden')}catch(e){$('camError').textContent='Não foi possível acessar a câmera. Verifique a permissão e use HTTPS.'}}
 function rounded(ctx,img,x,y,w,h,r){ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.clip();ctx.drawImage(img,x,y,w,h);ctx.restore()}
-async function capture(){
+async async function capture(){
   const v=$('video');
   if(!v.videoWidth) return alert('Ative a câmera primeiro.');
 
-  // Arquivo final sempre em 9:16, ideal para visualização em celular.
+  /*
+    FOTO FINAL 9:16:
+    - 35% superior: carta / informações
+    - 65% inferior: selfie
+    Assim a escrita nunca é colocada por cima da cabeça do cliente.
+  */
   const W=1080, H=1920;
   const c=document.createElement('canvas');
   c.width=W; c.height=H;
   const ctx=c.getContext('2d');
 
-  drawVideoCover(ctx,v,0,0,W,H);
-  await drawFinalComposition(ctx,c);
+  const letterH = 620;
+  const photoY = letterH;
+  const photoH = H - letterH;
+
+  // Fundo da área da foto.
+  ctx.fillStyle='#111';
+  ctx.fillRect(0,photoY,W,photoH);
+
+  // A selfie ocupa somente a área abaixo da carta.
+  drawVideoCover(ctx,v,0,photoY,W,photoH);
+
+  // Carta fica exclusivamente na parte superior.
+  drawLetter(ctx,c,0,0,W,letterH);
+
+  // Boleira permanece na área da foto, abaixo da carta.
+  drawFinalBaker(ctx,c,photoY,photoH);
 
   photo=c.toDataURL('image/png');
   $('resultImg').src=photo;
@@ -86,6 +105,7 @@ function drawVideoCover(ctx,v,x,y,w,h){
   }
 
   ctx.save();
+
   if(facing==='user'){
     ctx.translate(x+w,y);
     ctx.scale(-1,1);
@@ -93,131 +113,99 @@ function drawVideoCover(ctx,v,x,y,w,h){
   }else{
     ctx.drawImage(v,sx,sy,sw,sh,x,y,w,h);
   }
+
   ctx.restore();
 }
 
-function drawFinalComposition(ctx,c){
-  return new Promise(resolve=>{
-    const W=c.width,H=c.height;
+function drawLetter(ctx,c,x,y,w,h){
+  ctx.save();
 
-    // Leve escurecimento no topo para a carta se destacar.
-    const topShade=ctx.createLinearGradient(0,0,0,720);
-    topShade.addColorStop(0,'rgba(0,0,0,.38)');
-    topShade.addColorStop(1,'rgba(0,0,0,0)');
-    ctx.fillStyle=topShade;
-    ctx.fillRect(0,0,W,720);
+  // Fundo geral da carta.
+  ctx.fillStyle='#fff9e9';
+  ctx.fillRect(x,y,w,h);
 
-    // Carta de Natal.
-    const x=58,y=55,w=W-116,h=535;
+  // Borda vinho.
+  ctx.strokeStyle='#8b1e1e';
+  ctx.lineWidth=18;
+  ctx.strokeRect(9,9,w-18,h-18);
 
-    ctx.save();
-    ctx.shadowColor='rgba(0,0,0,.48)';
-    ctx.shadowBlur=28;
-    ctx.shadowOffsetY=12;
+  // Filete dourado.
+  ctx.strokeStyle='#d6a928';
+  ctx.lineWidth=5;
+  ctx.strokeRect(29,29,w-58,h-58);
 
-    roundRect(ctx,x,y,w,h,34);
-    ctx.fillStyle='#fff9e9';
-    ctx.fill();
+  // Enfeites.
+  ctx.textAlign='center';
+  ctx.font='38px serif';
+  ctx.fillStyle='#8b1e1e';
+  ctx.fillText('🎄   ✦   🎁',w/2,92);
 
-    ctx.shadowColor='transparent';
+  // Título.
+  ctx.fillStyle='#7b1f1f';
+  ctx.font="700 48px 'Great Vibes', cursive";
+  ctx.fillText('Para Papai Noel',w/2,158);
 
-    // Moldura vinho.
-    roundRect(ctx,x,y,w,h,34);
-    ctx.strokeStyle='#8b1e1e';
-    ctx.lineWidth=12;
-    ctx.stroke();
+  // Frase configurada.
+  let msg=settings.message||'';
+  const maxW=w-130;
+  let fs=46;
+  ctx.font=`800 ${fs}px Montserrat,Arial`;
 
-    // Filete dourado interno.
-    roundRect(ctx,x+20,y+20,w-40,h-40,24);
-    ctx.strokeStyle='#d6a928';
-    ctx.lineWidth=4;
-    ctx.stroke();
-
-    // Enfeites.
-    ctx.textAlign='center';
-    ctx.font='42px serif';
-    ctx.fillStyle='#8b1e1e';
-    ctx.fillText('🎄   ✦   🎁',W/2,y+68);
-
-    // Cabeçalho da carta.
-    ctx.fillStyle='#7b1f1f';
-    ctx.font="700 43px 'Great Vibes', cursive";
-    ctx.fillText('Para Papai Noel',W/2,y+130);
-
-    // Frase configurada, com quebra automática.
-    let msg=settings.message||'';
-    let fs=46;
-    const maxW=w-110;
+  while(ctx.measureText(msg).width>maxW && fs>25){
+    fs-=2;
     ctx.font=`800 ${fs}px Montserrat,Arial`;
+  }
 
-    while(ctx.measureText(msg).width>maxW && fs>26){
-      fs-=2;
-      ctx.font=`800 ${fs}px Montserrat,Arial`;
+  const words=msg.split(/\s+/);
+  const lines=[];
+  let line='';
+
+  for(const word of words){
+    const test=line?line+' '+word:word;
+    if(ctx.measureText(test).width>maxW && line){
+      lines.push(line);
+      line=word;
+    }else{
+      line=test;
     }
+  }
+  if(line) lines.push(line);
 
-    const words=msg.split(/\s+/);
-    const lines=[];
-    let line='';
-    for(const word of words){
-      const test=line?line+' '+word:word;
-      if(ctx.measureText(test).width>maxW && line){
-        lines.push(line);
-        line=word;
-      }else{
-        line=test;
-      }
-    }
-    if(line) lines.push(line);
+  ctx.fillStyle='#29231d';
+  const lh=fs*1.18;
+  const startY=238;
 
-    ctx.fillStyle='#29231d';
-    const lh=fs*1.22;
-    lines.slice(0,4).forEach((t,i)=>ctx.fillText(t,W/2,y+210+i*lh));
-
-    // Instagram + hashtag no rodapé da carta.
-    ctx.font='700 24px Montserrat,Arial';
-    ctx.fillStyle='#8b1e1e';
-    const info=[settings.handle,settings.hashtag].filter(Boolean).join('   •   ');
-    ctx.fillText(info,W/2,y+h-65);
-
-    ctx.restore();
-
-    // Boleira no canto inferior direito.
-    const img=$('baker');
-    if(img && img.complete && img.naturalWidth && !img.classList.contains('empty')){
-      const bw=W*.45;
-      const bh=Math.min(H*.56,bw*img.naturalHeight/img.naturalWidth);
-      const bx=W-bw-22;
-      const by=H-bh-18;
-      ctx.save();
-      ctx.shadowColor='rgba(0,0,0,.45)';
-      ctx.shadowBlur=22;
-      ctx.shadowOffsetY=10;
-      ctx.drawImage(img,bx,by,bw,bh);
-      ctx.restore();
-    }
-
-    // Pequena assinatura visual no rodapé.
-    ctx.save();
-    const bottom=ctx.createLinearGradient(0,H-260,0,H);
-    bottom.addColorStop(0,'rgba(0,0,0,0)');
-    bottom.addColorStop(1,'rgba(0,0,0,.20)');
-    ctx.fillStyle=bottom;
-    ctx.fillRect(0,H-260,W,260);
-    ctx.restore();
-
-    resolve();
+  lines.slice(0,4).forEach((t,i)=>{
+    ctx.fillText(t,w/2,startY+i*lh);
   });
+
+  // Instagram + hashtag.
+  ctx.font='700 24px Montserrat,Arial';
+  ctx.fillStyle='#8b1e1e';
+  const info=[settings.handle,settings.hashtag].filter(Boolean).join('   •   ');
+  ctx.fillText(info,w/2,h-70);
+
+  ctx.restore();
 }
 
-function roundRect(ctx,x,y,w,h,r){
-  r=Math.min(r,w/2,h/2);
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
-  ctx.closePath();
+function drawFinalBaker(ctx,c,photoY,photoH){
+  const img=$('baker');
+  if(!img || !img.complete || !img.naturalWidth || img.classList.contains('empty')) return;
+
+  const W=c.width;
+
+  // A boleira fica somente na área inferior da foto.
+  const bw=W*.45;
+  const bh=Math.min(photoH*.78,bw*img.naturalHeight/img.naturalWidth);
+  const bx=W-bw-22;
+  const by=photoY+photoH-bh-18;
+
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,.45)';
+  ctx.shadowBlur=22;
+  ctx.shadowOffsetY=10;
+  ctx.drawImage(img,bx,by,bw,bh);
+  ctx.restore();
 }
 
 function download(){let a=document.createElement('a');a.href=photo;a.download='selfie-de-natal.png';a.click()}
