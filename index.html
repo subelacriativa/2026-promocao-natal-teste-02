@@ -10,23 +10,23 @@
 <style>
 body{margin:0;min-height:100vh;color:#fff;font-family:Montserrat,system-ui,sans-serif;background:linear-gradient(145deg,#7f1d1d,#b91c1c 45%,#14532d)}
 .script{font-family:'Great Vibes',cursive}.glass{background:#ffffff1c;border:1px solid #ffffff33;backdrop-filter:blur(12px)}
-.camera{position:relative;width:100%;max-width:760px;aspect-ratio:4/3;margin:auto;overflow:hidden;border-radius:24px;background:#111;border:3px solid #facc15aa;box-shadow:0 20px 60px #0006}
+.camera{position:relative;width:min(100%,430px);max-width:430px;aspect-ratio:9/16;margin:auto;overflow:hidden;border-radius:24px;background:#111;border:3px solid #facc15aa;box-shadow:0 20px 60px #0006}
 video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}.overlay{position:absolute;inset:0;pointer-events:none}
-.baker{position:absolute;right:2%;bottom:1%;width:40%;max-height:92%;object-fit:contain;filter:drop-shadow(0 10px 12px #0008)}
-.top{position:absolute;top:5%;left:5%;right:5%;text-align:center;text-shadow:0 3px 8px #0009}.msg{font-size:clamp(18px,3.5vw,34px);font-weight:800}
+.baker{position:absolute;right:2%;bottom:1%;width:50%;max-height:92%;object-fit:contain;filter:drop-shadow(0 10px 12px #0008)}
+.top{display:none;position:absolute;top:5%;left:5%;right:5%;text-align:center;text-shadow:0 3px 8px #0009}.msg{font-size:clamp(18px,3.5vw,34px);font-weight:800}
 .pill{display:inline-block;margin:6px 3px 0;padding:6px 12px;border-radius:999px;background:#0008;font-weight:700;font-size:clamp(12px,2vw,18px)}
 .capture{width:78px;height:78px;border-radius:50%;background:#fff;border:7px solid #ffffff77;box-shadow:0 6px 25px #0006}
 .btn{transition:.2s}.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}.modal{background:#000b;backdrop-filter:blur(5px)}
-input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border:1px solid #ddd;outline:0}.hidden{display:none!important}
+input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border:1px solid #ddd;outline:0}.hidden{display:none!important}.baker.empty{display:none}
 .snow{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}.snow i{position:absolute;top:-20px;opacity:.8;animation:fall linear infinite}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
 </style></head>
 <body>
 <div class="snow" id="snow"></div>
 <main class="min-h-screen px-4 py-5">
 <header class="max-w-5xl mx-auto flex justify-between items-center mb-5"><div><div class="text-xs uppercase tracking-[.25em] opacity-80">Experiência de Natal</div><h1 class="script text-5xl">Selfie de Natal 🎄</h1></div><button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button></header>
-<section class="max-w-5xl mx-auto"><div class="text-center mb-5"><h2 id="title" class="text-2xl sm:text-3xl font-extrabold"></h2><p class="mt-2 opacity-90">Fique ao lado da nossa boleira e compartilhe sua foto.</p></div>
-<div class="camera"><video id="video" autoplay playsinline muted></video><div class="overlay"><div class="top"><div id="message" class="msg"></div><span id="handle" class="pill"></span><span id="hashtag" class="pill"></span></div><img id="baker" class="baker" alt="Boleira"></div>
-<div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center"><div><div class="text-5xl">📸</div><h3 class="font-bold text-xl mt-2">Vamos tirar sua foto?</h3><p class="text-sm opacity-90">Autorize a câmera frontal para continuar.</p><button id="start" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold">Ativar câmera</button><p id="camError" class="text-sm text-yellow-200 mt-3"></p></div></div></div>
+<section class="max-w-5xl mx-auto"><div class="text-center mb-5"><h2 id="title" class="text-2xl sm:text-3xl font-extrabold"></h2><p class="mt-2 opacity-90">Enquadre-se na câmera vertical e fique ao lado da nossa boleira.</p></div>
+<div class="camera"><video id="video" autoplay playsinline muted></video><div class="overlay"><div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-black/35 text-white/90 text-[11px] font-semibold backdrop-blur-sm">Enquadre-se aqui 📸</div><div class="top"><div id="message" class="msg"></div><span id="handle" class="pill"></span><span id="hashtag" class="pill"></span></div><img id="baker" class="baker" alt="Boleira"></div>
+<div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center"><div><div class="text-5xl">📸</div><h3 class="font-bold text-xl mt-2">Vamos tirar sua foto?</h3><p class="text-sm opacity-90">Autorize a câmera frontal. A foto será vertical (9:16).</p><button id="start" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold">Ativar câmera</button><p id="camError" class="text-sm text-yellow-200 mt-3"></p></div></div></div>
 <div class="flex justify-center items-center gap-5 mt-5"><button id="flip" class="btn glass rounded-full w-12 h-12 text-xl">↔️</button><button id="capture" class="capture"></button></div>
 <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3"><div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs opacity-80">Adquira o produto.</div></div><div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera.</div></div><div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs opacity-80">Publique no Instagram.</div></div></div>
 <p id="status" class="text-center text-sm opacity-70 mt-5"></p></section></main>
@@ -48,18 +48,184 @@ const $=id=>document.getElementById(id);let sb=null,stream=null,facing='user',ph
 if(SUPABASE_URL&&SUPABASE_ANON_KEY)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 const handle=v=>{v=(v||'').trim();return v?(v.startsWith('@')?v:'@'+v):''};
 const hashtag=v=>{v=(v||'').trim();return v?(v.startsWith('#')?v:'#'+v.replace(/^#+/,'')):''};
-function apply(s){settings={handle:handle(s.handle||DEFAULTS.handle),hashtag:hashtag(s.hashtag||DEFAULTS.hashtag),title:s.title||DEFAULTS.title,message:s.message||DEFAULTS.message,image:s.image||DEFAULTS.image};$('title').textContent=settings.title;$('message').textContent=settings.message;$('handle').textContent=settings.handle;$('hashtag').textContent=settings.hashtag;$('baker').src=settings.image||'';$('clientLabel').textContent='Cliente: '+CLIENTE_ID;}
+function apply(s){settings={handle:handle(s.handle||DEFAULTS.handle),hashtag:hashtag(s.hashtag||DEFAULTS.hashtag),title:s.title||DEFAULTS.title,message:s.message||DEFAULTS.message,image:s.image||DEFAULTS.image};$('title').textContent=settings.title;$('message').textContent=settings.message;$('handle').textContent=settings.handle;$('hashtag').textContent=settings.hashtag;const b=$('baker');b.classList.toggle('empty',!settings.image);if(settings.image)b.src=settings.image;else b.removeAttribute('src');$('clientLabel').textContent='Cliente: '+CLIENTE_ID;}
 async function load(){if(sb){try{let{data,error}=await sb.from('configuracoes').select('*').eq('cliente_id',CLIENTE_ID).maybeSingle();if(error)throw error;if(data){apply(data);$('status').textContent='Configuração carregada do banco.';return}}catch(e){console.warn(e)}}try{apply(JSON.parse(localStorage.getItem('natal_config_'+CLIENTE_ID)||'null')||DEFAULTS)}catch{apply(DEFAULTS)}}
 async function save(s){s.handle=handle(s.handle);s.hashtag=hashtag(s.hashtag);if(sb){let{error}=await sb.from('configuracoes').upsert({cliente_id:CLIENTE_ID,handle:s.handle,hashtag:s.hashtag,title:s.title,message:s.message,image:s.image,updated_at:new Date().toISOString()},{onConflict:'cliente_id'});if(error)throw error}else localStorage.setItem('natal_config_'+CLIENTE_ID,JSON.stringify(s));apply(s)}
 async function camera(){try{if(stream)stream.getTracks().forEach(t=>t.stop());stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:960}},audio:false});$('video').srcObject=stream;$('video').classList.toggle('mirror',facing==='user');$('prompt').classList.add('hidden')}catch(e){$('camError').textContent='Não foi possível acessar a câmera. Verifique a permissão e use HTTPS.'}}
 function rounded(ctx,img,x,y,w,h,r){ctx.save();ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.clip();ctx.drawImage(img,x,y,w,h);ctx.restore()}
-async function capture(){let v=$('video');if(!v.videoWidth)return alert('Ative a câmera primeiro.');let c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;let x=c.getContext('2d');if(facing==='user'){x.translate(c.width,0);x.scale(-1,1)}x.drawImage(v,0,0,c.width,c.height);x.setTransform(1,0,0,1,0,0);let w=c.width,h=c.height;x.fillStyle='rgba(0,0,0,.5)';x.fillRect(0,0,w,h*.18);x.textAlign='center';x.fillStyle='#fff';x.shadowColor='#000';x.shadowBlur=9;let fs=Math.max(28,w*.038),m=settings.message;x.font=`800 ${fs}px Montserrat,Arial`;while(x.measureText(m).width>w*.84&&fs>18){fs-=2;x.font=`800 ${fs}px Montserrat,Arial`}x.fillText(m,w/2,h*.08);x.font=`700 ${Math.max(20,w*.021)}px Montserrat,Arial`;let label=[settings.handle,settings.hashtag].filter(Boolean).join('   ');let tw=x.measureText(label).width+40;x.fillStyle='#0009';x.beginPath();x.roundRect((w-tw)/2,h*.095,tw,44,22);x.fill();x.fillStyle='#fff';x.fillText(label,w/2,h*.125);let img=$('baker');if(img.complete&&img.naturalWidth){let bw=w*.4,bh=Math.min(h*.86,bw*img.naturalHeight/img.naturalWidth),bx=w-bw-w*.02,by=h-bh-h*.01;rounded(x,img,bx,by,bw,bh,30)}x.shadowBlur=0;x.strokeStyle='#facc15';x.lineWidth=Math.max(5,w*.006);x.strokeRect(3,3,w-6,h-6);photo=c.toDataURL('image/png');$('resultImg').src=photo;c.toBlob(b=>file=new File([b],'selfie-natal.png',{type:'image/png'}),'image/png');$('result').classList.remove('hidden')}
+async function capture(){
+  const v=$('video');
+  if(!v.videoWidth) return alert('Ative a câmera primeiro.');
+
+  // Arquivo final sempre em 9:16, ideal para visualização em celular.
+  const W=1080, H=1920;
+  const c=document.createElement('canvas');
+  c.width=W; c.height=H;
+  const ctx=c.getContext('2d');
+
+  drawVideoCover(ctx,v,0,0,W,H);
+  await drawFinalComposition(ctx,c);
+
+  photo=c.toDataURL('image/png');
+  $('resultImg').src=photo;
+  c.toBlob(b=>file=new File([b],'selfie-de-natal.png',{type:'image/png'}),'image/png');
+  $('result').classList.remove('hidden');
+}
+
+function drawVideoCover(ctx,v,x,y,w,h){
+  const vw=v.videoWidth, vh=v.videoHeight;
+  const target=w/h, source=vw/vh;
+  let sx=0,sy=0,sw=vw,sh=vh;
+
+  if(source>target){
+    sw=vh*target;
+    sx=(vw-sw)/2;
+  }else{
+    sh=vw/target;
+    sy=(vh-sh)/2;
+  }
+
+  ctx.save();
+  if(facing==='user'){
+    ctx.translate(x+w,y);
+    ctx.scale(-1,1);
+    ctx.drawImage(v,sx,sy,sw,sh,0,0,w,h);
+  }else{
+    ctx.drawImage(v,sx,sy,sw,sh,x,y,w,h);
+  }
+  ctx.restore();
+}
+
+function drawFinalComposition(ctx,c){
+  return new Promise(resolve=>{
+    const W=c.width,H=c.height;
+
+    // Leve escurecimento no topo para a carta se destacar.
+    const topShade=ctx.createLinearGradient(0,0,0,720);
+    topShade.addColorStop(0,'rgba(0,0,0,.38)');
+    topShade.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=topShade;
+    ctx.fillRect(0,0,W,720);
+
+    // Carta de Natal.
+    const x=58,y=55,w=W-116,h=535;
+
+    ctx.save();
+    ctx.shadowColor='rgba(0,0,0,.48)';
+    ctx.shadowBlur=28;
+    ctx.shadowOffsetY=12;
+
+    roundRect(ctx,x,y,w,h,34);
+    ctx.fillStyle='#fff9e9';
+    ctx.fill();
+
+    ctx.shadowColor='transparent';
+
+    // Moldura vinho.
+    roundRect(ctx,x,y,w,h,34);
+    ctx.strokeStyle='#8b1e1e';
+    ctx.lineWidth=12;
+    ctx.stroke();
+
+    // Filete dourado interno.
+    roundRect(ctx,x+20,y+20,w-40,h-40,24);
+    ctx.strokeStyle='#d6a928';
+    ctx.lineWidth=4;
+    ctx.stroke();
+
+    // Enfeites.
+    ctx.textAlign='center';
+    ctx.font='42px serif';
+    ctx.fillStyle='#8b1e1e';
+    ctx.fillText('🎄   ✦   🎁',W/2,y+68);
+
+    // Cabeçalho da carta.
+    ctx.fillStyle='#7b1f1f';
+    ctx.font="700 43px 'Great Vibes', cursive";
+    ctx.fillText('Para Papai Noel',W/2,y+130);
+
+    // Frase configurada, com quebra automática.
+    let msg=settings.message||'';
+    let fs=46;
+    const maxW=w-110;
+    ctx.font=`800 ${fs}px Montserrat,Arial`;
+
+    while(ctx.measureText(msg).width>maxW && fs>26){
+      fs-=2;
+      ctx.font=`800 ${fs}px Montserrat,Arial`;
+    }
+
+    const words=msg.split(/\s+/);
+    const lines=[];
+    let line='';
+    for(const word of words){
+      const test=line?line+' '+word:word;
+      if(ctx.measureText(test).width>maxW && line){
+        lines.push(line);
+        line=word;
+      }else{
+        line=test;
+      }
+    }
+    if(line) lines.push(line);
+
+    ctx.fillStyle='#29231d';
+    const lh=fs*1.22;
+    lines.slice(0,4).forEach((t,i)=>ctx.fillText(t,W/2,y+210+i*lh));
+
+    // Instagram + hashtag no rodapé da carta.
+    ctx.font='700 24px Montserrat,Arial';
+    ctx.fillStyle='#8b1e1e';
+    const info=[settings.handle,settings.hashtag].filter(Boolean).join('   •   ');
+    ctx.fillText(info,W/2,y+h-65);
+
+    ctx.restore();
+
+    // Boleira no canto inferior direito.
+    const img=$('baker');
+    if(img && img.complete && img.naturalWidth && !img.classList.contains('empty')){
+      const bw=W*.45;
+      const bh=Math.min(H*.56,bw*img.naturalHeight/img.naturalWidth);
+      const bx=W-bw-22;
+      const by=H-bh-18;
+      ctx.save();
+      ctx.shadowColor='rgba(0,0,0,.45)';
+      ctx.shadowBlur=22;
+      ctx.shadowOffsetY=10;
+      ctx.drawImage(img,bx,by,bw,bh);
+      ctx.restore();
+    }
+
+    // Pequena assinatura visual no rodapé.
+    ctx.save();
+    const bottom=ctx.createLinearGradient(0,H-260,0,H);
+    bottom.addColorStop(0,'rgba(0,0,0,0)');
+    bottom.addColorStop(1,'rgba(0,0,0,.20)');
+    ctx.fillStyle=bottom;
+    ctx.fillRect(0,H-260,W,260);
+    ctx.restore();
+
+    resolve();
+  });
+}
+
+function roundRect(ctx,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+}
+
 function download(){let a=document.createElement('a');a.href=photo;a.download='selfie-de-natal.png';a.click()}
 async function share(){if(file&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:'Minha selfie de Natal 🎄',text:`${settings.handle} ${settings.hashtag}`,files:[file]});return}catch(e){if(e.name==='AbortError')return}}download();alert('A foto foi baixada. Publique-a no Instagram manualmente.')}
 async function copy(){let t=[settings.handle,settings.hashtag].filter(Boolean).join(' ');try{await navigator.clipboard.writeText(t);alert('Instagram e hashtag copiados!')}catch{alert(t)}}
 $('start').onclick=camera;$('flip').onclick=async()=>{facing=facing==='user'?'environment':'user';if(stream)await camera()};$('capture').onclick=capture;$('download').onclick=download;$('share').onclick=share;$('instagram').onclick=()=>window.open('https://www.instagram.com/','_blank','noopener,noreferrer');$('copy').onclick=copy;$('retake').onclick=()=>$('result').classList.add('hidden');$('closeResult').onclick=()=>$('result').classList.add('hidden');
 $('configBtn').onclick=()=>{$('fHandle').value=settings.handle;$('fHashtag').value=settings.hashtag;$('fTitle').value=settings.title;$('fMessage').value=settings.message;$('fImage').value=settings.image.startsWith('data:')?'':settings.image;$('config').classList.remove('hidden')};$('closeConfig').onclick=()=>$('config').classList.add('hidden');
-$('fFile').onchange=()=>{let f=$('fFile').files[0];if(!f)return;let r=new FileReader();r.onload=()=>{$('fImage').value=r.result};r.readAsDataURL(f)};
+$('baker').onerror=()=>$('baker').classList.add('empty');$('baker').onload=()=>$('baker').classList.remove('empty');$('fFile').onchange=()=>{let f=$('fFile').files[0];if(!f)return;let r=new FileReader();r.onload=()=>{$('fImage').value=r.result};r.readAsDataURL(f)};
 $('form').onsubmit=async e=>{e.preventDefault();$('saveStatus').textContent='Salvando...';try{await save({handle:$('fHandle').value,hashtag:$('fHashtag').value,title:$('fTitle').value.trim(),message:$('fMessage').value.trim(),image:$('fImage').value.trim()});$('saveStatus').textContent=sb?'Salvo no Supabase.':'Salvo apenas neste navegador.'}catch(err){$('saveStatus').textContent='Erro: '+err.message}};
 if(ADMIN)$('configBtn').classList.remove('hidden');for(let i=0;i<25;i++){let s=document.createElement('i');s.textContent='❄';s.style.left=Math.random()*100+'%';s.style.fontSize=8+Math.random()*14+'px';s.style.animationDuration=5+Math.random()*8+'s';s.style.animationDelay=-Math.random()*10+'s';$('snow').appendChild(s)}
 load();
