@@ -71,7 +71,8 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
   <div class="min-h-full flex items-center justify-center">
     <div class="bg-white text-gray-900 rounded-3xl max-w-md w-full p-5">
       <div class="flex justify-between"><h3 class="font-extrabold text-xl">Sua foto ficou pronta! 🎄</h3><button id="closeResult" class="text-2xl">×</button></div>
-      <img id="resultImg" class="w-full rounded-2xl mt-3">
+      <p class="text-xs text-gray-500 mt-1 mb-2">Se o botão de salvar não funcionar, pressione e segure a foto para guardar na galeria.</p>
+      <img id="resultImg" class="w-full rounded-2xl border border-gray-200">
       <div class="grid grid-cols-2 gap-2 mt-4">
         <button id="download" class="rounded-xl bg-red-700 text-white font-bold py-3">⬇️ Baixar</button>
         <button id="share" class="rounded-xl bg-green-700 text-white font-bold py-3">📤 Compartilhar</button>
@@ -94,7 +95,7 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
         <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80"></label>
         <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80"></label>
         <label class="block text-sm font-bold">Título<input id="fTitle" maxlength="120"></label>
-        <label class="block text-sm font-bold">Frase ina<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
+        <label class="block text-sm font-bold">Frase de Natal<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
         <label class="block text-sm font-bold">Foto/PNG da boleira<input id="fFile" type="file" accept="image/png,image/jpeg,image/webp"><small class="font-normal text-gray-500">Prefira PNG transparente para o efeito de máscara.</small></label>
         <label class="block text-sm font-bold">URL da foto<input id="fImage" placeholder="https://.../boleira.png"></label>
         <p id="saveStatus" class="text-sm"></p>
@@ -110,7 +111,7 @@ const SUPABASE_ANON_KEY = '';
 const p = new URLSearchParams(location.search);
 const CLIENTE_ID = p.get('cliente') || '001';
 const ADMIN = p.get('admin') === 'true';
-const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Tire sua selfie de !', message: 'Que o seu  seja tão doce quanto um abraço! 🎄❤️', image: '' };
+const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Tire sua selfie de Natal!', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
 const $ = id => document.getElementById(id);
 let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
 
@@ -128,6 +129,9 @@ function apply(s) {
   $('handle').textContent = settings.handle;
   $('hashtag').textContent = settings.hashtag;
   const b = $('baker');
+  
+  // Trata CORS para não sujar o canvas durante a exportação
+  b.crossOrigin = "anonymous";
   b.classList.toggle('empty', !settings.image);
   if (settings.image) b.src = settings.image; else b.removeAttribute('src');
   $('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
@@ -164,11 +168,20 @@ async function camera() {
     $('video').classList.toggle('mirror', facing === 'user');
     $('prompt').classList.add('hidden');$('camError').textContent = '';
   } catch (e) {
-    $('camError').textContent = 'Não foi possível acessar a câmera. Verifique a permissão e se a página está rodando sob HTTPS.';
+    $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do seu navegador.';
   }
 }
 
-// CORRIGIDO: Removido o duplo 'async'
+// Converte o canvas para File de maneira totalmente síncrona/promissificada
+function canvasToFile(canvas, fileName) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error('Falha ao gerar o blob da imagem.'));
+      resolve(new File([blob], fileName, { type: 'image/png' }));
+    }, 'image/png');
+  });
+}
+
 async function capture() {
   const v = $('video');
   if (!v.videoWidth) return alert('Ative a câmera primeiro.');
@@ -189,10 +202,15 @@ async function capture() {
   drawLetter(ctx, c, 0, 0, W, letterH);
   drawFinalBaker(ctx, c, photoY, photoH);
 
-  photo = c.toDataURL('image/png');
-  $('resultImg').src = photo;
-  c.toBlob(b => file = new File([b], 'selfie-de-.png', { type: 'image/png' }), 'image/png');
-  $('result').classList.remove('hidden');
+  try {
+    photo = c.toDataURL('image/png');
+    $('resultImg').src = photo;
+    file = await canvasToFile(c, 'selfie-de-natal.png');
+    $('result').classList.remove('hidden');
+  } catch (err) {
+    console.error("Erro no Canvas / CORS:", err);
+    alert("Houve um erro ao processar a imagem. Se usou uma URL externa para a foto da boleira, tente fazer o upload direto do arquivo nas configurações.");
+  }
 }
 
 function drawVideoCover(ctx, v, x, y, w, h) {
@@ -235,7 +253,7 @@ function drawLetter(ctx, c, x, y, w, h) {
   ctx.textAlign = 'center';
   ctx.font = '38px serif';
   ctx.fillStyle = '#8b1e1e';
-  ctx.fillText('🎄   ✦   🎁', w / 2, 92);
+  ctx.fillText('🎄    ✦    🎁', w / 2, 92);
 
   ctx.fillStyle = '#7b1f1f';
   ctx.font = "700 48px 'Great Vibes', cursive";
@@ -276,7 +294,7 @@ function drawLetter(ctx, c, x, y, w, h) {
 
   ctx.font = '700 24px Montserrat,Arial';
   ctx.fillStyle = '#8b1e1e';
-  const info = [settings.handle, settings.hashtag].filter(Boolean).join('   •   ');
+  const info = [settings.handle, settings.hashtag].filter(Boolean).join('    •    ');
   ctx.fillText(info, w / 2, h - 70);
   ctx.restore();
 }
@@ -300,30 +318,33 @@ function drawFinalBaker(ctx, c, photoY, photoH) {
 }
 
 function download() {
-  let a = document.createElement('a');
+  if (!photo) return alert('Nenhuma foto gerada.');
+  const a = document.createElement('a');
   a.href = photo;
-  a.download = 'selfie-de-.png';
+  a.download = 'selfie-de-natal.png';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 async function share() {
   if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ title: 'Minha selfie de  🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
+      await navigator.share({ title: 'Minha selfie de Natal 🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;
     }
   }
   download();
-  alert('A foto foi baixada. Publique-a no Instagram manualmente.');
+  alert('Sua foto foi baixada. Agora é só publicar no Instagram!');
 }
 
 async function copy() {
   let t = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
   try {
     await navigator.clipboard.writeText(t);
-    alert('Instagram e hashtag copiados!');
+    alert('Instagram e hashtag copiados com sucesso!');
   } catch {
     alert(t);
   }
@@ -362,7 +383,7 @@ $('form').onsubmit = async e => {
   e.preventDefault();
   $('saveStatus').textContent = 'Salvando...';
   try {
-    await save({ handle: $('fHandle').value, hashtag:$('fHashtag').value, title: $('fTitle').value.trim(), message:$('fMessage').value.trim(), image: $('fImage').value.trim() });$('saveStatus').textContent = sb ? 'Salvo no Supabase.' : 'Salvo apenas neste navegador.';
+    await save({ handle: $('fHandle').value, hashtag:$('fHashtag').value, title: $('fTitle').value.trim(), message:$('fMessage').value.trim(), image: $('fImage').value.trim() });$('saveStatus').textContent = sb ? 'Salvo no Supabase.' : 'Salvo neste navegador.';
   } catch (err) {
     $('saveStatus').textContent = 'Erro: ' + err.message;
   }
