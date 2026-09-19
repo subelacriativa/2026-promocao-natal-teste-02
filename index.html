@@ -35,8 +35,8 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
     <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
   </div>
   <div class="flex items-center gap-2">
-    <button id="musicBtn" class="glass rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 btn">🎵 Música</button>
-    <button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button>
+    <button id="musicBtn" class="glass rounded-full px-3 py-2 text-xs sm:text-sm font-semibold flex items-center gap-1 btn">🎵 Música</button>
+    <button id="configBtn" class="hidden glass rounded-full w-10 h-10 flex items-center justify-center text-lg btn" title="Configurações">⚙️</button>
   </div>
 </header>
 <section class="max-w-5xl mx-auto">
@@ -51,12 +51,12 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
       </div>
       <img id="baker" class="baker" alt="Boleira">
     </div>
-    <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center">
+    <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center z-20">
       <div>
         <div class="text-5xl">📸</div>
         <h3 class="font-bold text-xl mt-2">Vamos tirar uma selfie?</h3>
         <p class="text-sm opacity-90"></p>
-        <button id="start" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold">Ativar câmera</button>
+        <button id="start" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg">Ativar câmera</button>
         <p id="camError" class="text-sm text-yellow-200 mt-3"></p>
       </div>
     </div>
@@ -184,27 +184,31 @@ const bgMusic = $('bgMusic');
 const musicBtn = $('musicBtn');
 
 function playMusic() {
-  if (bgMusic.paused) {
+  if (bgMusic && bgMusic.paused) {
     bgMusic.play().then(() => {
-      musicBtn.textContent = '⏸️ Música';
-    }).catch(e => console.log('Autoplay bloqueado até interagir:', e));
+      if (musicBtn) musicBtn.textContent = '⏸️ Música';
+    }).catch(e => console.log('Aguardando interação do usuário para áudio:', e));
   }
 }
 
 function toggleMusic() {
+  if (!bgMusic) return;
   if (bgMusic.paused) {
-    bgMusic.play();
-    musicBtn.textContent = '⏸️ Música';
+    bgMusic.play().then(() => {
+      musicBtn.textContent = '⏸️ Música';
+    }).catch(e => alert('Erro ao tocar áudio. Verifique o arquivo mp3.'));
   } else {
     bgMusic.pause();
     musicBtn.textContent = '🎵 Música';
   }
 }
 
-musicBtn.onclick = toggleMusic;
+if (musicBtn) musicBtn.onclick = toggleMusic;
 
 async function camera() {
-  playMusic(); // Inicia a música ao clicar para ativar a câmera
+  // Tenta tocar a música de fundo sem bloquear a câmera
+  playMusic();
+
   try {
     if (stream) stream.getTracks().forEach(t => t.stop());
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
@@ -212,7 +216,8 @@ async function camera() {
     $('video').classList.toggle('mirror', facing === 'user');
     $('prompt').classList.add('hidden');$('camError').textContent = '';
   } catch (e) {
-    $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do seu navegador.';
+    console.error("Erro câmera:", e);
+    $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do navegador.';
   }
 }
 
@@ -393,7 +398,7 @@ async function copy() {
   }
 }
 
-// BIND DOS EVENTOS
+// VINCULAÇÃO DOS BOTÕES E EVENTOS
 $('start').onclick = camera;
 $('flip').onclick = async () => { facing = facing === 'user' ? 'environment' : 'user'; if (stream) await camera(); };$('capture').onclick = capture;
 $('download').onclick = download;
@@ -466,12 +471,10 @@ $('form').onsubmit = async e => {
   }
 };
 
-if (ADMIN) $('configBtn').classList.remove('hidden');
-
-// Tenta reproduzir na primeira interação em qualquer lugar da tela
-document.body.addEventListener('click', () => {
-  playMusic();
-}, { once: true });
+// Se for ADMIN, exibe a engrenagem no topo
+if (ADMIN) {
+  $('configBtn').classList.remove('hidden');
+}
 
 // Flocos de neve
 for (let i = 0; i < 25; i++) {
