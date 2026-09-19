@@ -25,12 +25,19 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
 </head>
 <body>
 <div class="snow" id="snow"></div>
+
+<!-- Áudio de fundo -->
+<audio id="bgMusic" src="audio-jingle-bells-natal-cavaquinho.mp3" loop preload="auto"></audio>
+
 <main class="min-h-screen px-4 py-5">
 <header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
   <div>
     <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
   </div>
-  <button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button>
+  <div class="flex items-center gap-2">
+    <button id="musicBtn" class="glass rounded-full px-4 py-2 text-sm font-semibold flex items-center gap-2 btn">🎵 Música</button>
+    <button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button>
+  </div>
 </header>
 <section class="max-w-5xl mx-auto">
   <div class="camera">
@@ -172,7 +179,32 @@ async function save(s) {
   apply(s);
 }
 
+// Controle de Música de Fundo
+const bgMusic = $('bgMusic');
+const musicBtn = $('musicBtn');
+
+function playMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play().then(() => {
+      musicBtn.textContent = '⏸️ Música';
+    }).catch(e => console.log('Autoplay bloqueado até interagir:', e));
+  }
+}
+
+function toggleMusic() {
+  if (bgMusic.paused) {
+    bgMusic.play();
+    musicBtn.textContent = '⏸️ Música';
+  } else {
+    bgMusic.pause();
+    musicBtn.textContent = '🎵 Música';
+  }
+}
+
+musicBtn.onclick = toggleMusic;
+
 async function camera() {
+  playMusic(); // Inicia a música ao clicar para ativar a câmera
   try {
     if (stream) stream.getTracks().forEach(t => t.stop());
     stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
@@ -382,7 +414,6 @@ $('closeConfig').onclick = () =>$('config').classList.add('hidden');
 $('baker').onerror = () =>$('baker').classList.add('empty');
 $('baker').onload = () =>$('baker').classList.remove('empty');
 
-// Função utilitária para converter arquivo selecionado/tirado na câmera
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
     const r = new FileReader();
@@ -399,7 +430,6 @@ $('fFile').onchange = async () => {
   try {
     const dataUrl = await readFileAsDataURL(f);
     $('fImage').value = dataUrl;
-    // Atualiza imediatamente a foto da boleira na tela
     const b = $('baker');
     b.src = dataUrl;
     b.classList.remove('empty');
@@ -413,7 +443,6 @@ $('form').onsubmit = async e => {
   e.preventDefault();
   $('saveStatus').textContent = 'Salvando...';
   
-  // Garantia: se houver um arquivo recém-tirado/selecionado ainda não lido
   let f = $('fFile').files[0];
   if (f && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
     try {
@@ -438,6 +467,11 @@ $('form').onsubmit = async e => {
 };
 
 if (ADMIN) $('configBtn').classList.remove('hidden');
+
+// Tenta reproduzir na primeira interação em qualquer lugar da tela
+document.body.addEventListener('click', () => {
+  playMusic();
+}, { once: true });
 
 // Flocos de neve
 for (let i = 0; i < 25; i++) {
