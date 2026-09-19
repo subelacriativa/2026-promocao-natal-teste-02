@@ -28,7 +28,7 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
 <main class="min-h-screen px-4 py-5">
 <header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
   <div>
-    <h1 class="script text-5xl">Selfie de Natal 🎄</h1>
+    <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
   </div>
   <button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button>
 </header>
@@ -111,7 +111,7 @@ const SUPABASE_ANON_KEY = '';
 const p = new URLSearchParams(location.search);
 const CLIENTE_ID = p.get('cliente') || '001';
 const ADMIN = p.get('admin') === 'true';
-const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Tire sua selfie de Natal!', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
+const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Selfie de Natal 🎄', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
 const $ = id => document.getElementById(id);
 let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
 
@@ -123,18 +123,29 @@ const handle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : 
 const hashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : '' };
 
 function apply(s) {
-  settings = { handle: handle(s.handle || DEFAULTS.handle), hashtag: hashtag(s.hashtag || DEFAULTS.hashtag), title: s.title || DEFAULTS.title, message: s.message || DEFAULTS.message, image: s.image || DEFAULTS.image };
-  $('title').textContent = settings.title;
-  $('message').textContent = settings.message;
-  $('handle').textContent = settings.handle;
-  $('hashtag').textContent = settings.hashtag;
-  const b = $('baker');
+  settings = { 
+    handle: handle(s.handle || DEFAULTS.handle), 
+    hashtag: hashtag(s.hashtag || DEFAULTS.hashtag), 
+    title: s.title || DEFAULTS.title, 
+    message: s.message || DEFAULTS.message, 
+    image: s.image || DEFAULTS.image 
+  };
   
-  // Trata CORS para não sujar o canvas durante a exportação
-  b.crossOrigin = "anonymous";
-  b.classList.toggle('empty', !settings.image);
-  if (settings.image) b.src = settings.image; else b.removeAttribute('src');
-  $('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
+  // Atualiza título da aba e do cabeçalho da página de forma segura
+  document.title = settings.title;
+  if ($('pageTitle'))$('pageTitle').textContent = settings.title;
+
+  if ($('message'))$('message').textContent = settings.message;
+  if ($('handle'))$('handle').textContent = settings.handle;
+  if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
+  
+  const b = $('baker');
+  if (b) {
+    b.crossOrigin = "anonymous";
+    b.classList.toggle('empty', !settings.image);
+    if (settings.image) b.src = settings.image; else b.removeAttribute('src');
+  }
+  if ($('clientLabel'))$('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
 }
 
 async function load() {
@@ -172,7 +183,6 @@ async function camera() {
   }
 }
 
-// Converte o canvas para File de maneira totalmente síncrona/promissificada
 function canvasToFile(canvas, fileName) {
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
