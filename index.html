@@ -28,16 +28,11 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
 <main class="min-h-screen px-4 py-5">
 <header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
   <div>
-    <div class="text-xs uppercase tracking-[.25em] opacity-80">Experiência de Natal</div>
-    <h1 class="script text-5xl">Selfie de Natal 🎄</h1>
+    <h1 class="script text-5xl">Selfie de  🎄</h1>
   </div>
   <button id="configBtn" class="hidden glass rounded-full w-11 h-11">⚙️</button>
 </header>
 <section class="max-w-5xl mx-auto">
-  <div class="text-center mb-5">
-    <h2 id="title" class="text-2xl sm:text-3xl font-extrabold"></h2>
-    <p class="mt-2 opacity-90">Enquadre-se na câmera vertical. A parte de cima ficará livre para a carta de Natal.</p>
-  </div>
   <div class="camera">
     <video id="video" autoplay playsinline muted></video>
     <div class="overlay">
@@ -99,7 +94,7 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
         <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80"></label>
         <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80"></label>
         <label class="block text-sm font-bold">Título<input id="fTitle" maxlength="120"></label>
-        <label class="block text-sm font-bold">Frase natalina<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
+        <label class="block text-sm font-bold">Frase ina<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
         <label class="block text-sm font-bold">Foto/PNG da boleira<input id="fFile" type="file" accept="image/png,image/jpeg,image/webp"><small class="font-normal text-gray-500">Prefira PNG transparente para o efeito de máscara.</small></label>
         <label class="block text-sm font-bold">URL da foto<input id="fImage" placeholder="https://.../boleira.png"></label>
         <p id="saveStatus" class="text-sm"></p>
@@ -115,7 +110,7 @@ const SUPABASE_ANON_KEY = '';
 const p = new URLSearchParams(location.search);
 const CLIENTE_ID = p.get('cliente') || '001';
 const ADMIN = p.get('admin') === 'true';
-const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#NatalDaBoleira', title: 'Tire sua selfie de Natal!', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
+const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Tire sua selfie de !', message: 'Que o seu  seja tão doce quanto um abraço! 🎄❤️', image: '' };
 const $ = id => document.getElementById(id);
 let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
 
@@ -146,7 +141,7 @@ async function load() {
       if (data) { apply(data); $('status').textContent = 'Configuração carregada do banco.'; return; }
     } catch (e) { console.warn(e); }
   }
-  try { apply(JSON.parse(localStorage.getItem('natal_config_' + CLIENTE_ID) || 'null') || DEFAULTS); } catch { apply(DEFAULTS); }
+  try { apply(JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null') || DEFAULTS); } catch { apply(DEFAULTS); }
 }
 
 async function save(s) {
@@ -156,7 +151,7 @@ async function save(s) {
     let { error } = await sb.from('configuracoes').upsert({ cliente_id: CLIENTE_ID, handle: s.handle, hashtag: s.hashtag, title: s.title, message: s.message, image: s.image, updated_at: new Date().toISOString() }, { onConflict: 'cliente_id' });
     if (error) throw error;
   } else {
-    localStorage.setItem('natal_config_' + CLIENTE_ID, JSON.stringify(s));
+    localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
   }
   apply(s);
 }
@@ -196,7 +191,7 @@ async function capture() {
 
   photo = c.toDataURL('image/png');
   $('resultImg').src = photo;
-  c.toBlob(b => file = new File([b], 'selfie-de-natal.png', { type: 'image/png' }), 'image/png');
+  c.toBlob(b => file = new File([b], 'selfie-de-.png', { type: 'image/png' }), 'image/png');
   $('result').classList.remove('hidden');
 }
 
@@ -307,14 +302,14 @@ function drawFinalBaker(ctx, c, photoY, photoH) {
 function download() {
   let a = document.createElement('a');
   a.href = photo;
-  a.download = 'selfie-de-natal.png';
+  a.download = 'selfie-de-.png';
   a.click();
 }
 
 async function share() {
   if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ title: 'Minha selfie de Natal 🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
+      await navigator.share({ title: 'Minha selfie de  🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
       return;
     } catch (e) {
       if (e.name === 'AbortError') return;
