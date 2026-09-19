@@ -122,359 +122,376 @@ input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border
 </div>
 
 <script>
-const SUPABASE_URL = '';
-const SUPABASE_ANON_KEY = '';
-const p = new URLSearchParams(location.search);
-const CLIENTE_ID = p.get('cliente') || '001';
-const ADMIN = p.get('admin') === 'true';
-const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Selfie de Natal 🎄', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
-const $ = id => document.getElementById(id);
-let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
+document.addEventListener('DOMContentLoaded', () => {
+  const SUPABASE_URL = '';
+  const SUPABASE_ANON_KEY = '';
+  const p = new URLSearchParams(location.search);
+  const CLIENTE_ID = p.get('cliente') || '001';
+  const ADMIN = p.get('admin') === 'true';
+  const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Selfie de Natal 🎄', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
+  const $ = id => document.getElementById(id);
+  let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
 
-if (SUPABASE_URL && SUPABASE_ANON_KEY && typeof supabase !== 'undefined') {
-  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-}
-
-const handle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : '' };
-const hashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : '' };
-
-function apply(s) {
-  settings = { 
-    handle: handle(s.handle || DEFAULTS.handle), 
-    hashtag: hashtag(s.hashtag || DEFAULTS.hashtag), 
-    title: s.title || DEFAULTS.title, 
-    message: s.message || DEFAULTS.message, 
-    image: s.image || DEFAULTS.image 
-  };
-  
-  document.title = settings.title;
-  if ($('pageTitle'))$('pageTitle').textContent = settings.title;
-  if ($('message'))$('message').textContent = settings.message;
-  if ($('handle'))$('handle').textContent = settings.handle;
-  if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
-  
-  const b = $('baker');
-  if (b) {
-    b.crossOrigin = "anonymous";
-    b.classList.toggle('empty', !settings.image);
-    if (settings.image) b.src = settings.image; else b.removeAttribute('src');
-  }
-  if ($('clientLabel'))$('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
-}
-
-async function load() {
-  if (sb) {
-    try {
-      let { data, error } = await sb.from('configuracoes').select('*').eq('cliente_id', CLIENTE_ID).maybeSingle();
-      if (error) throw error;
-      if (data) { apply(data); $('status').textContent = 'Configuração carregada do banco.'; return; }
-    } catch (e) { console.warn(e); }
-  }
-  try { apply(JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null') || DEFAULTS); } catch { apply(DEFAULTS); }
-}
-
-async function save(s) {
-  s.handle = handle(s.handle);
-  s.hashtag = hashtag(s.hashtag);
-  if (sb) {
-    let { error } = await sb.from('configuracoes').upsert({ cliente_id: CLIENTE_ID, handle: s.handle, hashtag: s.hashtag, title: s.title, message: s.message, image: s.image, updated_at: new Date().toISOString() }, { onConflict: 'cliente_id' });
-    if (error) throw error;
-  } else {
-    localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
-  }
-  apply(s);
-}
-
-// CORREÇÃO: BOTÃO SIM FECHA O MODAL SEMPRE, INDEPENDENTE DE FALHA NO ÁUDIO
-$('welcomeYesBtn').onclick = () => {$('welcomeModal').classList.add('hidden');
-  const bgMusic = $('bgMusic');
-  if (bgMusic) {
-    bgMusic.play().catch(e => {
-      console.log('Aviso: Áudio não pôde tocar (arquivo não encontrado ou bloqueado):', e);
-    });
-  }
-};
-
-async function camera() {
-  try {
-    if (stream) stream.getTracks().forEach(t => t.stop());
-    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
-    $('video').srcObject = stream;
-    $('video').classList.toggle('mirror', facing === 'user');
-    $('prompt').classList.add('hidden');$('camError').textContent = '';
-  } catch (e) {
-    console.error("Erro câmera:", e);
-    $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do navegador.';
-  }
-}
-
-function canvasToFile(canvas, fileName) {
-  return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => {
-      if (!blob) return reject(new Error('Falha ao gerar a imagem.'));
-      resolve(new File([blob], fileName, { type: 'image/png' }));
-    }, 'image/png');
-  });
-}
-
-async function capture() {
-  const v = $('video');
-  if (!v.videoWidth) return alert('Ative a câmera primeiro.');
-
-  const W = 1080, H = 1920;
-  const c = document.createElement('canvas');
-  c.width = W; c.height = H;
-  const ctx = c.getContext('2d');
-
-  const letterH = 620;
-  const photoY = letterH;
-  const photoH = H - letterH;
-
-  ctx.fillStyle = '#111';
-  ctx.fillRect(0, photoY, W, photoH);
-
-  drawVideoCover(ctx, v, 0, photoY, W, photoH);
-  drawLetter(ctx, c, 0, 0, W, letterH);
-  drawFinalBaker(ctx, c, photoY, photoH);
-
-  try {
-    photo = c.toDataURL('image/png');
-    $('resultImg').src = photo;
-    file = await canvasToFile(c, 'selfie-de-natal.png');
-    $('result').classList.remove('hidden');
-  } catch (err) {
-    console.error("Erro no Canvas:", err);
-    alert("Erro ao gerar foto. Certifique-se de salvar uma foto válida nas configurações.");
-  }
-}
-
-function drawVideoCover(ctx, v, x, y, w, h) {
-  const vw = v.videoWidth, vh = v.videoHeight;
-  const target = w / h, source = vw / vh;
-  let sx = 0, sy = 0, sw = vw, sh = vh;
-
-  if (source > target) {
-    sw = vh * target;
-    sx = (vw - sw) / 2;
-  } else {
-    sh = vw / target;
-    sy = (vh - sh) / 2;
+  if (SUPABASE_URL && SUPABASE_ANON_KEY && typeof supabase !== 'undefined') {
+    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
-  ctx.save();
-  if (facing === 'user') {
-    ctx.translate(x + w, y);
-    ctx.scale(-1, 1);
-    ctx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h);
-  } else {
-    ctx.drawImage(v, sx, sy, sw, sh, x, y, w, h);
-  }
-  ctx.restore();
-}
+  const handle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : '' };
+  const hashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : '' };
 
-function drawLetter(ctx, c, x, y, w, h) {
-  ctx.save();
-  ctx.fillStyle = '#fff9e9';
-  ctx.fillRect(x, y, w, h);
-
-  ctx.strokeStyle = '#8b1e1e';
-  ctx.lineWidth = 18;
-  ctx.strokeRect(9, 9, w - 18, h - 18);
-
-  ctx.strokeStyle = '#d6a928';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(29, 29, w - 58, h - 58);
-
-  ctx.textAlign = 'center';
-  ctx.font = '38px serif';
-  ctx.fillStyle = '#8b1e1e';
-  ctx.fillText('🎄    ✦    🎁', w / 2, 92);
-
-  ctx.fillStyle = '#7b1f1f';
-  ctx.font = "700 48px 'Great Vibes', cursive";
-  ctx.fillText('Para Papai Noel', w / 2, 158);
-
-  let msg = settings.message || '';
-  const maxW = w - 130;
-  let fs = 46;
-  ctx.font = `800 ${fs}px Montserrat,Arial`;
-
-  while (ctx.measureText(msg).width > maxW && fs > 25) {
-    fs -= 2;
-    ctx.font = `800 ${fs}px Montserrat,Arial`;
-  }
-
-  const words = msg.split(/\s+/);
-  const lines = [];
-  let line = '';
-
-  for (const word of words) {
-    const test = line ? line + ' ' + word : word;
-    if (ctx.measureText(test).width > maxW && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
-  }
-  if (line) lines.push(line);
-
-  ctx.fillStyle = '#29231d';
-  const lh = fs * 1.18;
-  const startY = 238;
-
-  lines.slice(0, 4).forEach((t, i) => {
-    ctx.fillText(t, w / 2, startY + i * lh);
-  });
-
-  ctx.font = '700 24px Montserrat,Arial';
-  ctx.fillStyle = '#8b1e1e';
-  const info = [settings.handle, settings.hashtag].filter(Boolean).join('    •    ');
-  ctx.fillText(info, w / 2, h - 70);
-  ctx.restore();
-}
-
-function drawFinalBaker(ctx, c, photoY, photoH) {
-  const img = $('baker');
-  if (!img || !img.complete || !img.naturalWidth || img.classList.contains('empty')) return;
-
-  const W = c.width;
-  const bw = W * .45;
-  const bh = Math.min(photoH * .78, bw * img.naturalHeight / img.naturalWidth);
-  const bx = W - bw - 22;
-  const by = photoY + photoH - bh - 18;
-
-  ctx.save();
-  ctx.shadowColor = 'rgba(0,0,0,.45)';
-  ctx.shadowBlur = 22;
-  ctx.shadowOffsetY = 10;
-  ctx.drawImage(img, bx, by, bw, bh);
-  ctx.restore();
-}
-
-function download() {
-  if (!photo) return alert('Nenhuma foto gerada.');
-  const a = document.createElement('a');
-  a.href = photo;
-  a.download = 'selfie-de-natal.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-}
-
-async function share() {
-  if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
-    try {
-      await navigator.share({ title: 'Minha selfie de Natal 🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
-      return;
-    } catch (e) {
-      if (e.name === 'AbortError') return;
-    }
-  }
-  download();
-  alert('Sua foto foi baixada. Agora é só publicar no Instagram!');
-}
-
-async function copy() {
-  let t = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
-  try {
-    await navigator.clipboard.writeText(t);
-    alert('Instagram e hashtag copiados com sucesso!');
-  } catch {
-    alert(t);
-  }
-}
-
-// BIND DOS EVENTOS
-$('start').onclick = camera;
-$('flip').onclick = async () => { facing = facing === 'user' ? 'environment' : 'user'; if (stream) await camera(); };$('capture').onclick = capture;
-$('download').onclick = download;
-$('share').onclick = share;
-$('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');$('copy').onclick = copy;
-$('retake').onclick = () =>$('result').classList.add('hidden');
-$('closeResult').onclick = () =>$('result').classList.add('hidden');
-
-$('configBtn').onclick = () => {$('fHandle').value = settings.handle;
-  $('fHashtag').value = settings.hashtag;
-  $('fTitle').value = settings.title;
-  $('fMessage').value = settings.message;
-  $('fImage').value = settings.image.startsWith('data:') ? '' : settings.image;
-  $('saveStatus').textContent = '';$('config').classList.remove('hidden');
-};
-$('closeConfig').onclick = () =>$('config').classList.add('hidden');
-
-$('baker').onerror = () =>$('baker').classList.add('empty');
-$('baker').onload = () =>$('baker').classList.remove('empty');
-
-function readFileAsDataURL(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result);
-    r.onerror = () => reject(new Error('Erro ao ler o arquivo de imagem.'));
-    r.readAsDataURL(file);
-  });
-}
-
-$('fFile').onchange = async () => {
-  let f = $('fFile').files[0];
-  if (!f) return;
-  $('saveStatus').textContent = 'Processando imagem...';
-  try {
-    const dataUrl = await readFileAsDataURL(f);
-    $('fImage').value = dataUrl;
+  function apply(s) {
+    settings = { 
+      handle: handle(s.handle || DEFAULTS.handle), 
+      hashtag: hashtag(s.hashtag || DEFAULTS.hashtag), 
+      title: s.title || DEFAULTS.title, 
+      message: s.message || DEFAULTS.message, 
+      image: s.image || DEFAULTS.image 
+    };
+    
+    document.title = settings.title;
+    if ($('pageTitle'))$('pageTitle').textContent = settings.title;
+    if ($('message'))$('message').textContent = settings.message;
+    if ($('handle'))$('handle').textContent = settings.handle;
+    if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
+    
     const b = $('baker');
-    b.src = dataUrl;
-    b.classList.remove('empty');
-    $('saveStatus').textContent = 'Imagem carregada! Clique em Salvar para confirmar.';
-  } catch (err) {
-    $('saveStatus').textContent = 'Erro ao carregar a foto tirada.';
+    if (b) {
+      b.crossOrigin = "anonymous";
+      b.classList.toggle('empty', !settings.image);
+      if (settings.image) b.src = settings.image; else b.removeAttribute('src');
+    }
+    if ($('clientLabel'))$('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
   }
-};
 
-$('form').onsubmit = async e => {
-  e.preventDefault();
-  $('saveStatus').textContent = 'Salvando...';
-  
-  let f = $('fFile').files[0];
-  if (f && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
+  async function load() {
+    if (sb) {
+      try {
+        let { data, error } = await sb.from('configuracoes').select('*').eq('cliente_id', CLIENTE_ID).maybeSingle();
+        if (error) throw error;
+        if (data) { apply(data); $('status').textContent = 'Configuração carregada do banco.'; return; }
+      } catch (e) { console.warn(e); }
+    }
+    try { apply(JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null') || DEFAULTS); } catch { apply(DEFAULTS); }
+  }
+
+  async function save(s) {
+    s.handle = handle(s.handle);
+    s.hashtag = hashtag(s.hashtag);
+    if (sb) {
+      let { error } = await sb.from('configuracoes').upsert({ cliente_id: CLIENTE_ID, handle: s.handle, hashtag: s.hashtag, title: s.title, message: s.message, image: s.image, updated_at: new Date().toISOString() }, { onConflict: 'cliente_id' });
+      if (error) throw error;
+    } else {
+      localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
+    }
+    apply(s);
+  }
+
+  // BOTÃO SIM - FECHAMENTO E ÁUDIO TRATADO
+  const yesBtn = $('welcomeYesBtn');
+  if (yesBtn) {
+    yesBtn.addEventListener('click', () => {
+      const modal = $('welcomeModal');
+      if (modal) modal.style.display = 'none';
+
+      const bgMusic = $('bgMusic');
+      if (bgMusic) {
+        bgMusic.play().catch(e => {
+          console.warn('Reprodução de áudio não permitida pelo navegador ou arquivo ausente:', e);
+        });
+      }
+    });
+  }
+
+  async function camera() {
     try {
-      $('fImage').value = await readFileAsDataURL(f);
-    } catch (err) {
-      $('saveStatus').textContent = 'Erro ao processar imagem da câmera.';
-      return;
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
+      $('video').srcObject = stream;
+      $('video').classList.toggle('mirror', facing === 'user');
+      $('prompt').classList.add('hidden');$('camError').textContent = '';
+    } catch (e) {
+      console.error("Erro câmera:", e);
+      $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do navegador.';
     }
   }
 
-  try {
-    await save({ 
-      handle: $('fHandle').value, 
-      hashtag: $('fHashtag').value, 
-      title: $('fTitle').value.trim(), 
-      message: $('fMessage').value.trim(), 
-      image: $('fImage').value.trim() 
+  function canvasToFile(canvas, fileName) {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (!blob) return reject(new Error('Falha ao gerar a imagem.'));
+        resolve(new File([blob], fileName, { type: 'image/png' }));
+      }, 'image/png');
     });
-    $('saveStatus').textContent = sb ? 'Salvo no Supabase com sucesso!' : 'Salvo neste navegador com sucesso!';
-    setTimeout(() => $('config').classList.add('hidden'), 1200);   } catch (err) {$('saveStatus').textContent = 'Erro ao salvar: ' + err.message;
   }
-};
 
-// Se for ADMIN, exibe a engrenagem no topo
-if (ADMIN) {
-  $('configBtn').classList.remove('hidden');
-}
+  async function capture() {
+    const v = $('video');
+    if (!v.videoWidth) return alert('Ative a câmera primeiro.');
 
-// Flocos de neve
-for (let i = 0; i < 25; i++) {
-  let s = document.createElement('i');
-  s.textContent = '❄';
-  s.style.left = Math.random() * 100 + '%';
-  s.style.fontSize = 8 + Math.random() * 14 + 'px';
-  s.style.animationDuration = 5 + Math.random() * 8 + 's';
-  s.style.animationDelay = -Math.random() * 10 + 's';
-  $('snow').appendChild(s);
-}
+    const W = 1080, H = 1920;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
 
-load();
+    const letterH = 620;
+    const photoY = letterH;
+    const photoH = H - letterH;
+
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, photoY, W, photoH);
+
+    drawVideoCover(ctx, v, 0, photoY, W, photoH);
+    drawLetter(ctx, c, 0, 0, W, letterH);
+    drawFinalBaker(ctx, c, photoY, photoH);
+
+    try {
+      photo = c.toDataURL('image/png');
+      $('resultImg').src = photo;
+      file = await canvasToFile(c, 'selfie-de-natal.png');
+      $('result').classList.remove('hidden');
+    } catch (err) {
+      console.error("Erro no Canvas:", err);
+      alert("Erro ao gerar foto. Certifique-se de salvar uma foto válida nas configurações.");
+    }
+  }
+
+  function drawVideoCover(ctx, v, x, y, w, h) {
+    const vw = v.videoWidth, vh = v.videoHeight;
+    const target = w / h, source = vw / vh;
+    let sx = 0, sy = 0, sw = vw, sh = vh;
+
+    if (source > target) {
+      sw = vh * target;
+      sx = (vw - sw) / 2;
+    } else {
+      sh = vw / target;
+      sy = (vh - sh) / 2;
+    }
+
+    ctx.save();
+    if (facing === 'user') {
+      ctx.translate(x + w, y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(v, sx, sy, sw, sh, 0, 0, w, h);
+    } else {
+      ctx.drawImage(v, sx, sy, sw, sh, x, y, w, h);
+    }
+    ctx.restore();
+  }
+
+  function drawLetter(ctx, c, x, y, w, h) {
+    ctx.save();
+    ctx.fillStyle = '#fff9e9';
+    ctx.fillRect(x, y, w, h);
+
+    ctx.strokeStyle = '#8b1e1e';
+    ctx.lineWidth = 18;
+    ctx.strokeRect(9, 9, w - 18, h - 18);
+
+    ctx.strokeStyle = '#d6a928';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(29, 29, w - 58, h - 58);
+
+    ctx.textAlign = 'center';
+    ctx.font = '38px serif';
+    ctx.fillStyle = '#8b1e1e';
+    ctx.fillText('🎄    ✦    🎁', w / 2, 92);
+
+    ctx.fillStyle = '#7b1f1f';
+    ctx.font = "700 48px 'Great Vibes', cursive";
+    ctx.fillText('Para Papai Noel', w / 2, 158);
+
+    let msg = settings.message || '';
+    const maxW = w - 130;
+    let fs = 46;
+    ctx.font = `800 ${fs}px Montserrat,Arial`;
+
+    while (ctx.measureText(msg).width > maxW && fs > 25) {
+      fs -= 2;
+      ctx.font = `800 ${fs}px Montserrat,Arial`;
+    }
+
+    const words = msg.split(/\s+/);
+    const lines = [];
+    let line = '';
+
+    for (const word of words) {
+      const test = line ? line + ' ' + word : word;
+      if (ctx.measureText(test).width > maxW && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+
+    ctx.fillStyle = '#29231d';
+    const lh = fs * 1.18;
+    const startY = 238;
+
+    lines.slice(0, 4).forEach((t, i) => {
+      ctx.fillText(t, w / 2, startY + i * lh);
+    });
+
+    ctx.font = '700 24px Montserrat,Arial';
+    ctx.fillStyle = '#8b1e1e';
+    const info = [settings.handle, settings.hashtag].filter(Boolean).join('    •    ');
+    ctx.fillText(info, w / 2, h - 70);
+    ctx.restore();
+  }
+
+  function drawFinalBaker(ctx, c, photoY, photoH) {
+    const img = $('baker');
+    if (!img || !img.complete || !img.naturalWidth || img.classList.contains('empty')) return;
+
+    const W = c.width;
+    const bw = W * .45;
+    const bh = Math.min(photoH * .78, bw * img.naturalHeight / img.naturalWidth);
+    const bx = W - bw - 22;
+    const by = photoY + photoH - bh - 18;
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowBlur = 22;
+    ctx.shadowOffsetY = 10;
+    ctx.drawImage(img, bx, by, bw, bh);
+    ctx.restore();
+  }
+
+  function download() {
+    if (!photo) return alert('Nenhuma foto gerada.');
+    const a = document.createElement('a');
+    a.href = photo;
+    a.download = 'selfie-de-natal.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  async function share() {
+    if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ title: 'Minha selfie de Natal 🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
+        return;
+      } catch (e) {
+        if (e.name === 'AbortError') return;
+      }
+    }
+    download();
+    alert('Sua foto foi baixada. Agora é só publicar no Instagram!');
+  }
+
+  async function copy() {
+    let t = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
+    try {
+      await navigator.clipboard.writeText(t);
+      alert('Instagram e hashtag copiados com sucesso!');
+    } catch {
+      alert(t);
+    }
+  }
+
+  // EVENTOS GERAIS
+  if ($('start'))$('start').onclick = camera;
+  if ($('flip'))$('flip').onclick = async () => { facing = facing === 'user' ? 'environment' : 'user'; if (stream) await camera(); };
+  if ($('capture'))$('capture').onclick = capture;
+  if ($('download'))$('download').onclick = download;
+  if ($('share'))$('share').onclick = share;
+  if ($('instagram'))$('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+  if ($('copy'))$('copy').onclick = copy;
+  if ($('retake')) $('retake').onclick = () =>$('result').classList.add('hidden');
+  if ($('closeResult')) $('closeResult').onclick = () =>$('result').classList.add('hidden');
+
+  if ($('configBtn')) {
+    $('configBtn').onclick = () => {$('fHandle').value = settings.handle;
+      $('fHashtag').value = settings.hashtag;
+      $('fTitle').value = settings.title;
+      $('fMessage').value = settings.message;
+      $('fImage').value = settings.image.startsWith('data:') ? '' : settings.image;
+      $('saveStatus').textContent = '';$('config').classList.remove('hidden');
+    };
+  }
+
+  if ($('closeConfig')) $('closeConfig').onclick = () =>$('config').classList.add('hidden');
+  if ($('baker')) {
+    $('baker').onerror = () =>$('baker').classList.add('empty');
+    $('baker').onload = () =>$('baker').classList.remove('empty');
+  }
+
+  function readFileAsDataURL(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => resolve(r.result);
+      r.onerror = () => reject(new Error('Erro ao ler o arquivo de imagem.'));
+      r.readAsDataURL(file);
+    });
+  }
+
+  if ($('fFile')) {$('fFile').onchange = async () => {
+      let f = $('fFile').files[0];
+      if (!f) return;
+      $('saveStatus').textContent = 'Processando imagem...';
+      try {
+        const dataUrl = await readFileAsDataURL(f);
+        $('fImage').value = dataUrl;
+        const b = $('baker');
+        b.src = dataUrl;
+        b.classList.remove('empty');
+        $('saveStatus').textContent = 'Imagem carregada! Clique em Salvar para confirmar.';
+      } catch (err) {
+        $('saveStatus').textContent = 'Erro ao carregar a foto.';
+      }
+    };
+  }
+
+  if ($('form')) {$('form').onsubmit = async e => {
+      e.preventDefault();
+      $('saveStatus').textContent = 'Salvando...';
+      
+      let f = $('fFile').files[0];
+      if (f && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
+        try {
+          $('fImage').value = await readFileAsDataURL(f);
+        } catch (err) {
+          $('saveStatus').textContent = 'Erro ao processar imagem da câmera.';
+          return;
+        }
+      }
+
+      try {
+        await save({ 
+          handle: $('fHandle').value, 
+          hashtag: $('fHashtag').value, 
+          title: $('fTitle').value.trim(), 
+          message: $('fMessage').value.trim(), 
+          image: $('fImage').value.trim() 
+        });
+        $('saveStatus').textContent = sb ? 'Salvo no Supabase com sucesso!' : 'Salvo neste navegador com sucesso!';
+        setTimeout(() => $('config').classList.add('hidden'), 1200);       } catch (err) {$('saveStatus').textContent = 'Erro ao salvar: ' + err.message;
+      }
+    };
+  }
+
+  if (ADMIN && $('configBtn')) {$('configBtn').classList.remove('hidden');
+  }
+
+  // Efeito Neve
+  const snowContainer = $('snow');
+  if (snowContainer) {
+    for (let i = 0; i < 25; i++) {
+      let s = document.createElement('i');
+      s.textContent = '❄';
+      s.style.left = Math.random() * 100 + '%';
+      s.style.fontSize = 8 + Math.random() * 14 + 'px';
+      s.style.animationDuration = 5 + Math.random() * 8 + 's';
+      s.style.animationDelay = -Math.random() * 10 + 's';
+      snowContainer.appendChild(s);
+    }
+  }
+
+  load();
+});
 </script>
 </body>
 </html>
