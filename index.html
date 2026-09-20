@@ -6,8 +6,6 @@
 <title>Selfie de Natal 🎄</title>
 <!-- Tailwind CSS for UI styling -->
 <script src="https://cdn.tailwindcss.com"></script>
-<!-- Supabase JS Client library -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -123,7 +121,6 @@
   .baker.empty {
     display: none;
   }
-  /* Snow effect animations */
   .snow {
     position: fixed;
     inset: 0;
@@ -146,10 +143,9 @@
 </style>
 </head>
 <body>
-<!-- Snow container overlay -->
+
 <div class="snow" id="snow"></div>
 
-<!-- Background audio element -->
 <audio id="bgMusic" src="audio-jingle-bells-natal-cavaquinho.mp3" loop preload="auto"></audio>
 
 <!-- WELCOME MODAL -->
@@ -184,7 +180,6 @@
         <img id="baker" class="baker empty" alt="Decoração">
       </div>
       
-      <!-- Câmera Start Prompt -->
       <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/50 p-6 text-center z-20">
         <div>
           <div class="text-5xl">📸</div>
@@ -198,13 +193,11 @@
       </div>
     </div>
 
-    <!-- Camera controls -->
     <div class="flex justify-center items-center gap-5 mt-5">
       <button id="flip" type="button" class="btn glass rounded-full w-12 h-12 text-xl" title="Inverter Câmera">↔️</button>
       <button id="capture" type="button" class="capture" title="Tirar Foto"></button>
     </div>
 
-    <!-- Step instructions -->
     <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3">
       <div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs opacity-80">Adquira o produto.</div></div>
       <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera do app.</div></div>
@@ -248,35 +241,36 @@
         <button id="closeConfig" type="button" class="text-2xl font-bold px-2">×</button>
       </div>
       <form id="form" class="space-y-4 mt-4">
+        <label class="block text-sm font-bold">Nome do Estabelecimento / Empresa
+          <input id="fCompanyName" maxlength="80" placeholder="Ex: Café e Confeitaria do Carlão">
+        </label>
         <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80" placeholder="@sua_confeitaria"></label>
         <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80" placeholder="#SuaHashtag"></label>
-        <label class="block text-sm font-bold">Título<input id="fTitle" maxlength="120"></label>
+        <label class="block text-sm font-bold">Título da Página<input id="fTitle" maxlength="120"></label>
         <label class="block text-sm font-bold">Frase de Natal<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
-        <label class="block text-sm font-bold">Imagem Overlay (Boleira/Logotipo)
+        <label class="block text-sm font-bold">Imagem Overlay (Logotipo / Mascote)
           <input id="fFile" type="file" accept="image/*">
           <small class="font-normal text-gray-500 block mt-1">Imagens PNG transparentes ficam mais bonitas.</small>
         </label>
-        <label class="block text-sm font-bold">Ou URL da Foto<input id="fImage" placeholder="https://.../boleira.png"></label>
+        <label class="block text-sm font-bold">Ou URL da Foto<input id="fImage" placeholder="https://.../logo.png"></label>
         <p id="saveStatus" class="text-sm font-semibold"></p>
-        <button id="saveBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold shadow">Salvar Configurações</button>
+        <button id="saveBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold shadow">Salvar Ajustes Temporários</button>
       </form>
     </div>
   </div>
 </div>
 
 <script>
-// Encapsulating all script execution inside DOMContentLoaded guarantees elements exist in DOM before access
 document.addEventListener('DOMContentLoaded', () => {
-  const SUPABASE_URL = '';
-  const SUPABASE_ANON_KEY = '';
-
   const params = new URLSearchParams(window.location.search);
   const CLIENTE_ID = params.get('cliente') || '001';
   const ADMIN = params.get('admin') === 'true';
 
+  // --- ALTERE AQUI PARA CADA ARQUIVO DO GITHUB ---
   const DEFAULTS = {
-    handle: '@sua_confeitaria',
-    hashtag: '#DaBoleira',
+    companyName: 'Café e Confeitaria do Carlão',
+    handle: '@confeitaria_carlao',
+    hashtag: '#NatalDoCarlao',
     title: 'Selfie de Natal 🎄',
     message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️',
     image: ''
@@ -284,33 +278,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const $ = id => document.getElementById(id);
   
-  let sb = null;
   let stream = null;
   let facing = 'user';
   let photo = '';
   let file = null;
   let settings = { ...DEFAULTS };
 
-  if (SUPABASE_URL && SUPABASE_ANON_KEY && typeof supabase !== 'undefined') {
-    sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  }
-
-  // --- WELCOME MODAL & AUDIO HANDLING ---
-  // Direct inline function to guarantee closing the welcome modal
   const handleWelcomeClick = function(e) {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    
-    // Hide the welcome modal cleanly
     const welcomeModal = $('welcomeModal');
     if (welcomeModal) {
       welcomeModal.style.display = 'none';
       welcomeModal.classList.add('hidden');
     }
 
-    // Try playing background audio safely
     const audio = $('bgMusic');
     if (audio) {
       const playPromise = audio.play();
@@ -322,19 +306,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Attach event listener directly to Welcome "Sim" Button
   const welcomeYesBtn = $('welcomeYesBtn');
   if (welcomeYesBtn) {
     welcomeYesBtn.addEventListener('click', handleWelcomeClick);
     welcomeYesBtn.addEventListener('touchstart', handleWelcomeClick, { passive: false });
   }
 
-  // --- CONFIGURATION MANAGEMENT ---
   const formatHandle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : ''; };
   const formatHashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : ''; };
 
   function applySettings(s) {
     settings = { 
+      companyName: s.companyName || DEFAULTS.companyName,
       handle: formatHandle(s.handle || DEFAULTS.handle), 
       hashtag: formatHashtag(s.hashtag || DEFAULTS.hashtag), 
       title: s.title || DEFAULTS.title, 
@@ -343,10 +326,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     document.title = settings.title;
-    if ($('pageTitle')) $('pageTitle').textContent = settings.title;
-    if ($('message')) $('message').textContent = settings.message;
-    if ($('handle')) $('handle').textContent = settings.handle;
-    if ($('hashtag')) $('hashtag').textContent = settings.hashtag;
+    if ($('pageTitle'))$('pageTitle').textContent = settings.title;
+    if ($('message'))$('message').textContent = settings.message;
+    if ($('handle'))$('handle').textContent = settings.handle;
+    if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
 
     const b = $('baker');
     if (b) {
@@ -359,23 +342,10 @@ document.addEventListener('DOMContentLoaded', () => {
         b.classList.add('empty');
       }
     }
-    if ($('clientLabel')) $('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
+    if ($('clientLabel'))$('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
   }
 
-  async function loadSettings() {
-    if (sb) {
-      try {
-        let { data, error } = await sb.from('configuracoes').select('*').eq('cliente_id', CLIENTE_ID).maybeSingle();
-        if (error) throw error;
-        if (data) { 
-          applySettings(data); 
-          if ($('status')) $('status').textContent = 'Configuração remota carregada.'; 
-          return; 
-        }
-      } catch (e) { 
-        console.warn('Estratégia local em uso:', e); 
-      }
-    }
+  function loadSettings() {
     try { 
       const localData = JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null');
       applySettings(localData || DEFAULTS); 
@@ -384,27 +354,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  async function saveSettings(s) {
+  function saveSettings(s) {
     s.handle = formatHandle(s.handle);
     s.hashtag = formatHashtag(s.hashtag);
-    if (sb) {
-      let { error } = await sb.from('configuracoes').upsert({ 
-        cliente_id: CLIENTE_ID, 
-        handle: s.handle, 
-        hashtag: s.hashtag, 
-        title: s.title, 
-        message: s.message, 
-        image: s.image, 
-        updated_at: new Date().toISOString() 
-      }, { onConflict: 'cliente_id' });
-      if (error) throw error;
-    } else {
-      localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
-    }
+    localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
     applySettings(s);
   }
 
-  // --- CAMERA CONTROL ---
   async function startCamera() {
     try {
       if (stream) {
@@ -417,8 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const videoEl = $('video');
       videoEl.srcObject = stream;
       videoEl.classList.toggle('mirror', facing === 'user');
-      $('prompt').classList.add('hidden');
-      $('camError').textContent = '';
+      $('prompt').classList.add('hidden');$('camError').textContent = '';
     } catch (e) {
       console.error("Erro ao ativar câmera:", e);
       $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões no navegador.';
@@ -498,7 +453,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#fff9e9';
     ctx.fillRect(x, y, w, h);
 
-    // Decorative Borders
     ctx.strokeStyle = '#8b1e1e';
     ctx.lineWidth = 18;
     ctx.strokeRect(9, 9, w - 18, h - 18);
@@ -514,7 +468,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     ctx.fillStyle = '#7b1f1f';
     ctx.font = "700 48px 'Great Vibes', cursive";
-    ctx.fillText('A equipe do Café e Pastelaria do Carlão deseja a todos os clientes um Feliz Natal!', w / 2, 158);
+    
+    // NOME DA EMPRESA DINÂMICO
+    const company = settings.companyName || 'Nossa Empresa';
+    ctx.fillText(`A equipe de ${company} deseja a todos um Feliz Natal!`, w / 2, 158);
 
     let msg = settings.message || '';
     const maxW = w - 130;
@@ -574,7 +531,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  // --- SHARING AND ACTIONS ---
   function downloadPhoto() {
     if (!photo) return alert('Nenhuma foto gerada.');
     const a = document.createElement('a');
@@ -606,7 +562,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const text = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
     if (!text) return;
     
-    // Clipboard fallback
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(() => {
         alert('Instagram e hashtag copiados!');
@@ -632,39 +587,36 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.removeChild(textArea);
   }
 
-  // UI Event Bindings
-  if ($('start')) $('start').onclick = startCamera;
-  if ($('flip')) {
-    $('flip').onclick = async () => { 
+  if ($('start'))$('start').onclick = startCamera;
+  if ($('flip')) {$('flip').onclick = async () => { 
       facing = (facing === 'user') ? 'environment' : 'user'; 
       if (stream) await startCamera(); 
     };
   }
-  if ($('capture')) $('capture').onclick = capturePhoto;
-  if ($('download')) $('download').onclick = downloadPhoto;
-  if ($('share')) $('share').onclick = sharePhoto;
-  if ($('instagram')) $('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-  if ($('copy')) $('copy').onclick = copyHashtag;
-  if ($('retake')) $('retake').onclick = () => $('result').classList.add('hidden');
-  if ($('closeResult')) $('closeResult').onclick = () => $('result').classList.add('hidden');
+  if ($('capture'))$('capture').onclick = capturePhoto;
+  if ($('download'))$('download').onclick = downloadPhoto;
+  if ($('share'))$('share').onclick = sharePhoto;
+  if ($('instagram'))$('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+  if ($('copy'))$('copy').onclick = copyHashtag;
+  if ($('retake')) $('retake').onclick = () =>$('result').classList.add('hidden');
+  if ($('closeResult')) $('closeResult').onclick = () =>$('result').classList.add('hidden');
 
-  if ($('configBtn')) {
-    $('configBtn').onclick = () => {
+  if ($('configBtn')) {$('configBtn').onclick = () => {
+      if ($('fCompanyName'))$('fCompanyName').value = settings.companyName;
       $('fHandle').value = settings.handle;
       $('fHashtag').value = settings.hashtag;
       $('fTitle').value = settings.title;
       $('fMessage').value = settings.message;
       $('fImage').value = settings.image.startsWith('data:') ? '' : settings.image;
-      $('saveStatus').textContent = '';
-      $('config').classList.remove('hidden');
+      $('saveStatus').textContent = '';$('config').classList.remove('hidden');
     };
   }
 
-  if ($('closeConfig')) $('closeConfig').onclick = () => $('config').classList.add('hidden');
+  if ($('closeConfig')) $('closeConfig').onclick = () =>$('config').classList.add('hidden');
 
   if ($('baker')) {
-    $('baker').onerror = () => $('baker').classList.add('empty');
-    $('baker').onload = () => $('baker').classList.remove('empty');
+    $('baker').onerror = () =>$('baker').classList.add('empty');
+    $('baker').onload = () =>$('baker').classList.remove('empty');
   }
 
   function readFileAsDataURL(f) {
@@ -676,8 +628,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  if ($('fFile')) {
-    $('fFile').onchange = async () => {
+  if ($('fFile')) {$('fFile').onchange = async () => {
       const f = $('fFile').files[0];
       if (!f) return;
       $('saveStatus').textContent = 'Processando imagem...';
@@ -694,13 +645,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  if ($('form')) {
-    $('form').onsubmit = async (e) => {
+  if ($('form')) {$('form').onsubmit = async (e) => {
       e.preventDefault();
       $('saveStatus').textContent = 'Salvando...';
 
       const fileInput = $('fFile').files[0];
-      if (fileInput && (!$('fImage').value || !$('fImage').value.startsWith('data:'))) {
+      if (fileInput && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
         try {
           $('fImage').value = await readFileAsDataURL(fileInput);
         } catch (err) {
@@ -709,27 +659,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
 
-      try {
-        await saveSettings({
-          handle: $('fHandle').value,
-          hashtag: $('fHashtag').value,
-          title: $('fTitle').value.trim(),
-          message: $('fMessage').value.trim(),
-          image: $('fImage').value.trim()
-        });
-        $('saveStatus').textContent = 'Configurações salvas com sucesso!';
-        setTimeout(() => $('config').classList.add('hidden'), 1000);
-      } catch (err) {
-        $('saveStatus').textContent = 'Erro ao salvar: ' + err.message;
-      }
+      saveSettings({
+        companyName: $('fCompanyName') ?$('fCompanyName').value.trim() : '',
+        handle: $('fHandle').value,
+        hashtag: $('fHashtag').value,
+        title: $('fTitle').value.trim(),
+        message: $('fMessage').value.trim(),
+        image: $('fImage').value.trim()
+      });
+      $('saveStatus').textContent = 'Configurações salvas localmente!';
+      setTimeout(() => $('config').classList.add('hidden'), 1000);
     };
   }
 
-  if (ADMIN && $('configBtn')) {
-    $('configBtn').classList.remove('hidden');
+  if (ADMIN && $('configBtn')) {$('configBtn').classList.remove('hidden');
   }
 
-  // --- SNOWFALL ANIMATION CREATOR ---
   const snowContainer = $('snow');
   if (snowContainer) {
     for (let i = 0; i < 28; i++) {
@@ -743,7 +688,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // Initial Configuration Load
   loadSettings();
 });
 </script>
