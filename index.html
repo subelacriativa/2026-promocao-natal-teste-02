@@ -4,7 +4,7 @@
 <meta charset="utf-8"> 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Selfie de Natal 🎄</title>
-<!-- Tailwind CSS for UI styling -->
+<!-- Tailwind CSS para estilização -->
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -148,7 +148,7 @@
 
 <audio id="bgMusic" src="audio-jingle-bells-natal-cavaquinho.mp3" loop preload="auto"></audio>
 
-<!-- WELCOME MODAL -->
+<!-- MODAL DE BOAS-VINDAS -->
 <div id="welcomeModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
   <div class="glass rounded-3xl p-8 max-w-sm w-full text-center border border-white/20 shadow-2xl">
     <div class="text-6xl mb-3 animate-bounce">🎄🎅</div>
@@ -180,15 +180,15 @@
         <img id="baker" class="baker empty" alt="Decoração">
       </div>
       
-      <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/50 p-6 text-center z-20">
-        <div>
-          <div class="text-5xl">📸</div>
-          <h3 class="font-bold text-xl mt-2 text-white"></h3>
-          <p class="text-xs text-white/80 mt-1"></p>
-          <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg">
+      <!-- TELA DE SOLICITAÇÃO DE CÂMERA / MENSAGEM DE ERRO -->
+      <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/75 p-6 text-center z-20">
+        <div class="max-w-xs">
+          <div class="text-5xl mb-2">📸</div>
+          <h3 id="promptTitle" class="font-bold text-xl text-white">Acesso à Câmera</h3>
+          <p id="camError" class="text-sm text-yellow-200 mt-2 leading-relaxed">Clique abaixo para autorizar o uso da câmera do seu celular.</p>
+          <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg w-full">
             Ativar Câmera
           </button>
-          <p id="camError" class="text-sm text-yellow-200 mt-3"></p>
         </div>
       </div>
     </div>
@@ -203,7 +203,6 @@
       <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera do app.</div></div>
       <div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs opacity-80">Publique no Instagram.</div></div>
     </div>
-    <p id="status" class="text-center text-sm opacity-70 mt-5"></p>
   </section>
 </main>
 
@@ -242,7 +241,7 @@
       </div>
       <form id="form" class="space-y-4 mt-4">
         <label class="block text-sm font-bold">Nome do Estabelecimento / Empresa
-          <input id="fCompanyName" maxlength="80" placeholder="Ex: Café e Confeitaria do Carlão">
+          <input id="fCompanyName" maxlength="80" placeholder="Ex: Confeitaria Exemplo">
         </label>
         <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80" placeholder="@sua_confeitaria"></label>
         <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80" placeholder="#SuaHashtag"></label>
@@ -250,7 +249,6 @@
         <label class="block text-sm font-bold">Frase de Natal<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
         <label class="block text-sm font-bold">Imagem Overlay (Logotipo / Mascote)
           <input id="fFile" type="file" accept="image/*">
-          <small class="font-normal text-gray-500 block mt-1">Imagens PNG transparentes ficam mais bonitas.</small>
         </label>
         <label class="block text-sm font-bold">Ou URL da Foto<input id="fImage" placeholder="https://.../logo.png"></label>
         <p id="saveStatus" class="text-sm font-semibold"></p>
@@ -266,13 +264,12 @@ document.addEventListener('DOMContentLoaded', () => {
   const CLIENTE_ID = params.get('cliente') || '001';
   const ADMIN = params.get('admin') === 'true';
 
-  // --- ALTERE AQUI PARA CADA ARQUIVO DO GITHUB ---
   const DEFAULTS = {
-    companyName: 'Café e Confeitaria do Carlão',
-    handle: '@confeitaria_carlao',
-    hashtag: '#NatalDoCarlao',
+    companyName: 'Confeitaria Especial',
+    handle: '@suaconfeitaria',
+    hashtag: '#NatalInesquecivel',
     title: 'Selfie de Natal 🎄',
-    message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️',
+    message: 'Que o seu Natal seja cheio de paz, amor e doçura! 🎄❤️',
     image: ''
   };
 
@@ -284,35 +281,78 @@ document.addEventListener('DOMContentLoaded', () => {
   let file = null;
   let settings = { ...DEFAULTS };
 
+  async function startCamera() {
+    const promptEl = $('prompt');
+    const camError = $('camError');
+    const startBtn = $('start');
+    
+    try {
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Seu navegador não suporta câmera ou a página não está em HTTPS.");
+      }
+
+      // Tenta acessar primeiro a câmera do modo selecionado (usuário/frontal)
+      const constraints = { 
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, 
+        audio: false 
+      };
+
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (fallbackErr) {
+        // Fallback genérico se a especificação de facingMode falhar
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
+
+      const videoEl = $('video');
+      videoEl.srcObject = stream;
+      
+      // Força o vídeo a reproduzir (necessário no iOS)
+      await videoEl.play();
+
+      videoEl.classList.toggle('mirror', facing === 'user');
+      
+      if (promptEl) promptEl.classList.add('hidden');
+      if (camError) camError.textContent = '';
+
+    } catch (e) {
+      console.error("Erro ao ativar câmera:", e);
+      if (promptEl) promptEl.classList.remove('hidden');
+      if (startBtn) startBtn.textContent = 'Tentar Novamente';
+      if (camError) {
+        camError.innerHTML = 'Não foi possível abrir a câmera.<br><br><b>Verifique:</b><br>1. Se você deu permissão no seu navegador.<br>2. Se a página está rodando em endereço HTTPS seguro.';
+      }
+    }
+  }
+
   const handleWelcomeClick = function(e) {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
+    
     const welcomeModal = $('welcomeModal');
     if (welcomeModal) {
       welcomeModal.style.display = 'none';
       welcomeModal.classList.add('hidden');
     }
 
-    // Inicia a câmera automaticamente após fechar o modal
-    startCamera();
-
     const audio = $('bgMusic');
     if (audio) {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.warn("Autoplay bloqueado pelo navegador ou arquivo indisponível:", err);
-        });
-      }
+      audio.play().catch(err => console.warn("Autoplay bloqueado:", err));
     }
+
+    // Executa imediatamente para aproveitar a interação do usuário
+    startCamera();
   };
 
   const welcomeYesBtn = $('welcomeYesBtn');
   if (welcomeYesBtn) {
     welcomeYesBtn.addEventListener('click', handleWelcomeClick);
-    welcomeYesBtn.addEventListener('touchstart', handleWelcomeClick, { passive: false });
   }
 
   const formatHandle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : ''; };
@@ -364,29 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
     applySettings(s);
   }
 
-  async function startCamera() {
-    try {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
-      }
-      stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, 
-        audio: false 
-      });
-      const videoEl = $('video');
-      videoEl.srcObject = stream;
-      videoEl.classList.toggle('mirror', facing === 'user');
-      $('prompt').classList.add('hidden');$('camError').textContent = '';
-    } catch (e) {
-      console.error("Erro ao ativar câmera:", e);
-      $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões no navegador.';
-    }
-  }
-
   function canvasToFile(canvas, fileName) {
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Falha ao gerar blob do canvas.'));
+        if (!blob) return reject(new Error('Falha ao gerar imagem.'));
         resolve(new File([blob], fileName, { type: 'image/png' }));
       }, 'image/png');
     });
@@ -394,7 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function capturePhoto() {
     const video = $('video');
-    if (!video.videoWidth) {
+    if (!video || !video.videoWidth) {
       alert('Ative a câmera antes de tirar a foto.');
       return;
     }
@@ -423,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
       $('result').classList.remove('hidden');
     } catch (err) {
       console.error("Erro na criação da foto:", err);
-      alert("Sua foto foi tirada! Clique na opção para salvar.");
+      alert("Foto capturada com sucesso!");
     }
   }
 
@@ -472,7 +493,6 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#7b1f1f';
     ctx.font = "700 48px 'Great Vibes', cursive";
     
-    // NOME DA EMPRESA DINÂMICO NO CANVAS
     const company = settings.companyName || 'Nossa Empresa';
     ctx.fillText(`A equipe de ${company} deseja a todos um Feliz Natal!`, w / 2, 158);
 
@@ -593,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if ($('start'))$('start').onclick = startCamera;
   if ($('flip')) {$('flip').onclick = async () => { 
       facing = (facing === 'user') ? 'environment' : 'user'; 
-      if (stream) await startCamera(); 
+      await startCamera(); 
     };
   }
   if ($('capture'))$('capture').onclick = capturePhoto;
