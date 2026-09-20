@@ -295,7 +295,6 @@ document.addEventListener('DOMContentLoaded', () => {
         throw new Error("Seu navegador não suporta câmera ou a página não está em HTTPS.");
       }
 
-      // Tenta acessar primeiro a câmera do modo selecionado (usuário/frontal)
       const constraints = { 
         video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, 
         audio: false 
@@ -304,14 +303,11 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         stream = await navigator.mediaDevices.getUserMedia(constraints);
       } catch (fallbackErr) {
-        // Fallback genérico se a especificação de facingMode falhar
         stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
       }
 
       const videoEl = $('video');
       videoEl.srcObject = stream;
-      
-      // Força o vídeo a reproduzir (necessário no iOS)
       await videoEl.play();
 
       videoEl.classList.toggle('mirror', facing === 'user');
@@ -346,7 +342,6 @@ document.addEventListener('DOMContentLoaded', () => {
       audio.play().catch(err => console.warn("Autoplay bloqueado:", err));
     }
 
-    // Executa imediatamente para aproveitar a interação do usuário
     startCamera();
   };
 
