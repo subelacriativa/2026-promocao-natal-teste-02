@@ -295,6 +295,9 @@ document.addEventListener('DOMContentLoaded', () => {
       welcomeModal.classList.add('hidden');
     }
 
+    // Inicia a câmera automaticamente após fechar o modal
+    startCamera();
+
     const audio = $('bgMusic');
     if (audio) {
       const playPromise = audio.play();
@@ -469,7 +472,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.fillStyle = '#7b1f1f';
     ctx.font = "700 48px 'Great Vibes', cursive";
     
-    // NOME DA EMPRESA DINÂMICO
+    // NOME DA EMPRESA DINÂMICO NO CANVAS
     const company = settings.companyName || 'Nossa Empresa';
     ctx.fillText(`A equipe de ${company} deseja a todos um Feliz Natal!`, w / 2, 158);
 
