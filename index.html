@@ -4,17 +4,16 @@
 <meta charset="utf-8"> 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Selfie de Natal 🎄</title>
-<!-- Tailwind CSS para estilização -->
-<script src="https://cdn.tailwindcss.com"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
+  * { box-sizing: border-box; }
   body {
     margin: 0;
     min-height: 100vh;
     color: #fff;
-    font-family: Montserrat, system-ui, -apple-system, sans-serif;
+    font-family: 'Montserrat', system-ui, -apple-system, sans-serif;
     background: linear-gradient(145deg, #7f1d1d, #b91c1c 45%, #14532d);
   }
   .script {
@@ -97,6 +96,8 @@
   .btn {
     transition: all 0.2s ease;
     cursor: pointer;
+    border: none;
+    outline: none;
   }
   .btn:hover {
     transform: translateY(-1px);
@@ -114,6 +115,7 @@
     padding: 11px 13px;
     border: 1px solid #ddd;
     outline: 0;
+    font-family: inherit;
   }
   .hidden {
     display: none !important;
@@ -140,6 +142,95 @@
       transform: translateY(110vh) rotate(360deg);
     }
   }
+
+  /* Utility classes para substituir o Tailwind e limpar o console */
+  .fixed { position: fixed; }
+  .absolute { position: absolute; }
+  .inset-0 { top:0; right:0; bottom:0; left:0; }
+  .z-20 { z-index: 20; }
+  .z-50 { z-index: 50; }
+  .z-100 { z-index: 100; }
+  .z-110 { z-index: 110; }
+  .z-200 { z-index: 200; }
+  .flex { display: flex; }
+  .grid { display: grid; }
+  .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .items-center { align-items: center; }
+  .justify-center { justify-content: center; }
+  .justify-between { justify-content: space-between; }
+  .p-4 { padding: 1rem; }
+  .p-5 { padding: 1.25rem; }
+  .p-6 { padding: 1.5rem; }
+  .p-8 { padding: 2rem; }
+  .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+  .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+  .py-5 { padding-top: 1.25rem; padding-bottom: 1.25rem; }
+  .px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
+  .px-4 { padding-left: 1rem; padding-right: 1rem; }
+  .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+  .mb-2 { margin-bottom: 0.5rem; }
+  .mb-3 { margin-bottom: 0.75rem; }
+  .mb-5 { margin-bottom: 1.25rem; }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-3 { margin-top: 0.75rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-5 { margin-top: 1.25rem; }
+  .mt-7 { margin-top: 1.75rem; }
+  .gap-2 { gap: 0.5rem; }
+  .gap-3 { gap: 0.75rem; }
+  .gap-5 { gap: 1.25rem; }
+  .max-w-xs { max-width: 20rem; }
+  .max-w-sm { max-width: 24rem; }
+  .max-w-md { max-width: 28rem; }
+  .max-w-lg { max-width: 32rem; }
+  .max-w-2xl { max-width: 42rem; }
+  .max-w-5xl { max-width: 64rem; }
+  .w-full { width: 100%; }
+  .w-11 { width: 2.75rem; }
+  .w-12 { width: 3rem; }
+  .h-11 { height: 2.75rem; }
+  .h-12 { height: 3rem; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .text-center { text-align: center; }
+  .text-xs { font-size: 0.75rem; line-height: 1rem; }
+  .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-5xl { font-size: 3rem; line-height: 1; }
+  .text-6xl { font-size: 3.75rem; line-height: 1; }
+  .font-medium { font-weight: 500; }
+  .font-semibold { font-weight: 600; }
+  .font-bold { font-weight: 700; }
+  .font-extrabold { font-weight: 800; }
+  .rounded-full { border-radius: 9999px; }
+  .rounded-xl { border-radius: 0.75rem; }
+  .rounded-2xl { border-radius: 1rem; }
+  .rounded-3xl { border-radius: 1.5rem; }
+  .bg-white { background-color: #ffffff; }
+  .bg-black-75 { background-color: rgba(0, 0, 0, 0.75); }
+  .bg-red-700 { background-color: #b91c1c; }
+  .bg-green-700 { background-color: #15803d; }
+  .bg-pink-600 { background-color: #db2777; }
+  .bg-gray-100 { background-color: #f3f4f6; }
+  .text-white { color: #ffffff; }
+  .text-gray-500 { color: #6b7280; }
+  .text-gray-800 { color: #1f2937; }
+  .text-gray-900 { color: #111827; }
+  .text-red-700 { color: #b91c1c; }
+  .text-yellow-200 { color: #fef08a; }
+  .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+  .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); }
+  .border-b { border-bottom: 1px solid #e5e7eb; }
+  .space-y-4 > * + * { margin-top: 1rem; }
+  .block { display: block; }
+  .overflow-auto { overflow: auto; }
+  .min-h-full { min-height: 100%; }
+
+  @media (min-width: 640px) {
+    .sm\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
 </style>
 </head>
 <body>
@@ -149,18 +240,18 @@
 <audio id="bgMusic" src="audio-jingle-bells-natal-cavaquinho.mp3" loop preload="auto"></audio>
 
 <!-- MODAL DE BOAS-VINDAS -->
-<div id="welcomeModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-  <div class="glass rounded-3xl p-8 max-w-sm w-full text-center border border-white/20 shadow-2xl">
-    <div class="text-6xl mb-3 animate-bounce">🎄🎅</div>
+<div id="welcomeModal" class="fixed inset-0 z-200 flex items-center justify-center p-4 modal">
+  <div class="glass rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl">
+    <div class="text-6xl mb-3">🎄🎅</div>
     <h2 class="text-2xl font-extrabold mb-2 text-white">Olá cliente!</h2>
-    <p class="text-white/90 text-sm mb-6 font-medium">Vamos fazer uma Selfie de Natal?</p>
-    <button id="welcomeYesBtn" type="button" class="btn w-full py-4 rounded-full bg-white text-red-700 font-extrabold text-lg shadow-xl active:scale-95 transition-transform">
+    <p class="text-white text-sm mb-6 font-medium">Vamos fazer uma Selfie de Natal?</p>
+    <button id="welcomeYesBtn" type="button" class="btn w-full py-4 rounded-full bg-white text-red-700 font-extrabold text-xl shadow-xl">
       Sim, vamos lá!
     </button>
   </div>
 </div>
 
-<main class="min-h-screen px-4 py-5">
+<main class="py-5 px-4">
   <header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
     <div>
       <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
@@ -180,13 +271,13 @@
         <img id="baker" class="baker empty" alt="Decoração">
       </div>
       
-      <!-- TELA DE SOLICITAÇÃO DE CÂMERA / MENSAGEM DE ERRO -->
-      <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/75 p-6 text-center z-20">
+      <!-- TELA DE SOLICITAÇÃO DE CÂMERA -->
+      <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black-75 p-6 text-center z-20">
         <div class="max-w-xs">
           <div class="text-5xl mb-2">📸</div>
           <h3 id="promptTitle" class="font-bold text-xl text-white">Acesso à Câmera</h3>
-          <p id="camError" class="text-sm text-yellow-200 mt-2 leading-relaxed">Clique abaixo para autorizar o uso da câmera do seu celular.</p>
-          <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg w-full">
+          <p id="camError" class="text-sm text-yellow-200 mt-2">Clique abaixo para autorizar o uso da câmera do seu celular.</p>
+          <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-xl w-full">
             Ativar Câmera
           </button>
         </div>
@@ -199,37 +290,37 @@
     </div>
 
     <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3">
-      <div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs opacity-80">Adquira o produto.</div></div>
-      <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera do app.</div></div>
-      <div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs opacity-80">Publique no Instagram.</div></div>
+      <div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs">Adquira o produto.</div></div>
+      <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs">Use a câmera do app.</div></div>
+      <div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs">Publique no Instagram.</div></div>
     </div>
   </section>
 </main>
 
 <!-- RESULT MODAL -->
-<div id="result" class="modal hidden fixed inset-0 z-[100] p-4 overflow-auto">
+<div id="result" class="modal hidden fixed inset-0 z-100 p-4 overflow-auto">
   <div class="min-h-full flex items-center justify-center">
     <div class="bg-white text-gray-900 rounded-3xl max-w-md w-full p-5 shadow-2xl">
       <div class="flex justify-between items-center mb-2">
         <h3 class="font-extrabold text-xl">Sua foto ficou pronta! 🎄</h3>
-        <button id="closeResult" type="button" class="text-2xl font-bold px-2">×</button>
+        <button id="closeResult" type="button" class="text-2xl font-bold px-2 btn">×</button>
       </div>
       <p class="text-xs text-gray-500 mb-3">Pressione e segure a foto caso queira salvar direto na galeria do celular.</p>
-      <img id="resultImg" class="w-full rounded-2xl border border-gray-200 shadow-inner" alt="Resultado Selfie">
+      <img id="resultImg" class="w-full rounded-2xl" alt="Resultado Selfie">
       
       <div class="grid grid-cols-2 gap-2 mt-4">
-        <button id="download" type="button" class="btn rounded-xl bg-red-700 text-white font-bold py-3 shadow">⬇️ Baixar</button>
-        <button id="share" type="button" class="btn rounded-xl bg-green-700 text-white font-bold py-3 shadow">📤 Compartilhar</button>
+        <button id="download" type="button" class="btn rounded-xl bg-red-700 text-white font-bold py-3">⬇️ Baixar</button>
+        <button id="share" type="button" class="btn rounded-xl bg-green-700 text-white font-bold py-3">📤 Compartilhar</button>
       </div>
-      <button id="instagram" type="button" class="btn w-full mt-2 rounded-xl bg-pink-600 text-white font-bold py-3 shadow">📷 Abrir Instagram</button>
-      <button id="copy" type="button" class="btn w-full mt-2 rounded-xl bg-gray-100 text-gray-800 py-3 font-bold border border-gray-200">📋 Copiar @ e Hashtag</button>
-      <button id="retake" type="button" class="w-full mt-3 text-gray-500 hover:text-gray-800 text-sm py-2">Tirar outra foto</button>
+      <button id="instagram" type="button" class="btn w-full mt-2 rounded-xl bg-pink-600 text-white font-bold py-3">📷 Abrir Instagram</button>
+      <button id="copy" type="button" class="btn w-full mt-2 rounded-xl bg-gray-100 text-gray-800 py-3 font-bold">📋 Copiar @ e Hashtag</button>
+      <button id="retake" type="button" class="w-full mt-3 text-gray-500 text-sm py-2 btn">Tirar outra foto</button>
     </div>
   </div>
 </div>
 
 <!-- CONFIG MODAL -->
-<div id="config" class="modal hidden fixed inset-0 z-[110] p-4 overflow-auto">
+<div id="config" class="modal hidden fixed inset-0 z-110 p-4 overflow-auto">
   <div class="min-h-full flex items-center justify-center">
     <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
       <div class="flex justify-between items-center border-b pb-3">
@@ -237,7 +328,7 @@
           <h3 class="text-xl font-extrabold">Configurações</h3>
           <p id="clientLabel" class="text-xs text-gray-500"></p>
         </div>
-        <button id="closeConfig" type="button" class="text-2xl font-bold px-2">×</button>
+        <button id="closeConfig" type="button" class="text-2xl font-bold px-2 btn">×</button>
       </div>
       <form id="form" class="space-y-4 mt-4">
         <label class="block text-sm font-bold">Nome do Estabelecimento / Empresa
@@ -252,14 +343,14 @@
         </label>
         <label class="block text-sm font-bold">Ou URL da Foto<input id="fImage" placeholder="https://.../logo.png"></label>
         <p id="saveStatus" class="text-sm font-semibold"></p>
-        <button id="saveBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold shadow">Salvar Ajustes Temporários</button>
+        <button id="saveBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold">Salvar Ajustes Temporários</button>
       </form>
     </div>
   </div>
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   const params = new URLSearchParams(window.location.search);
   const CLIENTE_ID = params.get('cliente') || '001';
   const ADMIN = params.get('admin') === 'true';
@@ -273,13 +364,15 @@ document.addEventListener('DOMContentLoaded', () => {
     image: ''
   };
 
-  const $ = id => document.getElementById(id);
-  
+  function $(id) {
+    return document.getElementById(id);
+  }
+
   let stream = null;
   let facing = 'user';
   let photo = '';
   let file = null;
-  let settings = { ...DEFAULTS };
+  let settings = Object.assign({}, DEFAULTS);
 
   async function startCamera() {
     const promptEl = $('prompt');
@@ -288,11 +381,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     try {
       if (stream) {
-        stream.getTracks().forEach(t => t.stop());
+        stream.getTracks().forEach(function(t) { t.stop(); });
       }
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("Seu navegador não suporta câmera ou a página não está em HTTPS.");
+        throw new Error("Navegador sem suporte a câmera ou conexão não segura (HTTP).");
       }
 
       const constraints = { 
@@ -310,48 +403,55 @@ document.addEventListener('DOMContentLoaded', () => {
       videoEl.srcObject = stream;
       await videoEl.play();
 
-      videoEl.classList.toggle('mirror', facing === 'user');
+      if (facing === 'user') {
+        videoEl.classList.add('mirror');
+      } else {
+        videoEl.classList.remove('mirror');
+      }
       
       if (promptEl) promptEl.classList.add('hidden');
       if (camError) camError.textContent = '';
 
     } catch (e) {
-      console.error("Erro ao ativar câmera:", e);
+      console.error("Erro Câmera:", e);
       if (promptEl) promptEl.classList.remove('hidden');
       if (startBtn) startBtn.textContent = 'Tentar Novamente';
       if (camError) {
-        camError.innerHTML = 'Não foi possível abrir a câmera.<br><br><b>Verifique:</b><br>1. Se você deu permissão no seu navegador.<br>2. Se a página está rodando em endereço HTTPS seguro.';
+        camError.innerHTML = 'Não foi possível abrir a câmera.<br>Verifique as permissões do seu navegador.';
       }
     }
   }
 
-  const handleWelcomeClick = function(e) {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    const welcomeModal = $('welcomeModal');
-    if (welcomeModal) {
-      welcomeModal.style.display = 'none';
-      welcomeModal.classList.add('hidden');
-    }
-
-    const audio = $('bgMusic');
-    if (audio) {
-      audio.play().catch(err => console.warn("Autoplay bloqueado:", err));
-    }
-
-    startCamera();
-  };
-
   const welcomeYesBtn = $('welcomeYesBtn');
   if (welcomeYesBtn) {
-    welcomeYesBtn.addEventListener('click', handleWelcomeClick);
+    welcomeYesBtn.addEventListener('click', function(e) {
+      if (e) e.preventDefault();
+      
+      const welcomeModal = $('welcomeModal');
+      if (welcomeModal) {
+        welcomeModal.classList.add('hidden');
+      }
+
+      const audio = $('bgMusic');
+      if (audio) {
+        audio.play().catch(function(err) {
+          console.warn("Autoplay bloqueado pelo navegador:", err);
+        });
+      }
+
+      startCamera();
+    });
   }
 
-  const formatHandle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : ''; };
-  const formatHashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : ''; };
+  function formatHandle(v) { 
+    v = (v || '').trim(); 
+    return v ? (v.startsWith('@') ? v : '@' + v) : ''; 
+  }
+
+  function formatHashtag(v) { 
+    v = (v || '').trim(); 
+    return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : ''; 
+  }
 
   function applySettings(s) {
     settings = { 
@@ -364,10 +464,10 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     document.title = settings.title;
-    if ($('pageTitle'))$('pageTitle').textContent = settings.title;
-    if ($('message'))$('message').textContent = settings.message;
-    if ($('handle'))$('handle').textContent = settings.handle;
-    if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
+    if ($('pageTitle')) $('pageTitle').textContent = settings.title;
+    if ($('message')) $('message').textContent = settings.message;
+    if ($('handle')) $('handle').textContent = settings.handle;
+    if ($('hashtag')) $('hashtag').textContent = settings.hashtag;
 
     const b = $('baker');
     if (b) {
@@ -380,14 +480,14 @@ document.addEventListener('DOMContentLoaded', () => {
         b.classList.add('empty');
       }
     }
-    if ($('clientLabel'))$('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
+    if ($('clientLabel')) $('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
   }
 
   function loadSettings() {
     try { 
       const localData = JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null');
       applySettings(localData || DEFAULTS); 
-    } catch { 
+    } catch(err) { 
       applySettings(DEFAULTS); 
     }
   }
@@ -400,9 +500,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function canvasToFile(canvas, fileName) {
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Falha ao gerar imagem.'));
+    return new Promise(function(resolve, reject) {
+      canvas.toBlob(function(blob) {
+        if (!blob) return reject(new Error('Falha ao gerar blob'));
         resolve(new File([blob], fileName, { type: 'image/png' }));
       }, 'image/png');
     });
@@ -438,8 +538,8 @@ document.addEventListener('DOMContentLoaded', () => {
       file = await canvasToFile(c, 'selfie-de-natal.png');
       $('result').classList.remove('hidden');
     } catch (err) {
-      console.error("Erro na criação da foto:", err);
-      alert("Foto capturada com sucesso!");
+      console.error("Erro ao gerar selfie:", err);
+      alert("Foto gerada!");
     }
   }
 
@@ -489,23 +589,24 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.font = "700 48px 'Great Vibes', cursive";
     
     const company = settings.companyName || 'Nossa Empresa';
-    ctx.fillText(`A equipe de ${company} deseja a todos um Feliz Natal!`, w / 2, 158);
+    ctx.fillText('A equipe de ' + company + ' deseja a todos um Feliz Natal!', w / 2, 158);
 
     let msg = settings.message || '';
     const maxW = w - 130;
     let fs = 44;
-    ctx.font = `800 ${fs}px Montserrat, sans-serif`;
+    ctx.font = '800 ' + fs + 'px Montserrat, sans-serif';
 
     while (ctx.measureText(msg).width > maxW && fs > 24) {
       fs -= 2;
-      ctx.font = `800 ${fs}px Montserrat, sans-serif`;
+      ctx.font = '800 ' + fs + 'px Montserrat, sans-serif';
     }
 
     const words = msg.split(/\s+/);
     const lines = [];
     let line = '';
 
-    for (const word of words) {
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
       const test = line ? line + ' ' + word : word;
       if (ctx.measureText(test).width > maxW && line) {
         lines.push(line);
@@ -520,8 +621,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const lh = fs * 1.2;
     const startY = 238;
 
-    lines.slice(0, 4).forEach((t, i) => {
-      ctx.fillText(t, w / 2, startY + i * lh);
+    lines.slice(0, 4).forEach(function(t, idx) {
+      ctx.fillText(t, w / 2, startY + idx * lh);
     });
 
     ctx.font = '700 24px Montserrat, sans-serif';
@@ -564,7 +665,7 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         await navigator.share({ 
           title: 'Minha Selfie de Natal 🎄', 
-          text: `${settings.handle} ${settings.hashtag}`, 
+          text: settings.handle + ' ' + settings.hashtag, 
           files: [file] 
         });
         return;
@@ -573,25 +674,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     downloadPhoto();
-    alert('Sua foto foi baixada! Você já pode compartilhar no Instagram.');
+    alert('Sua foto foi baixada!');
   }
 
   function copyHashtag() {
     const text = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
     if (!text) return;
-    
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).then(() => {
-        alert('Instagram e hashtag copiados!');
-      }).catch(() => {
-        execCopy(text);
-      });
-    } else {
-      execCopy(text);
-    }
-  }
 
-  function execCopy(text) {
     const textArea = document.createElement('textarea');
     textArea.value = text;
     document.body.appendChild(textArea);
@@ -605,48 +694,52 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.removeChild(textArea);
   }
 
-  if ($('start'))$('start').onclick = startCamera;
-  if ($('flip')) {$('flip').onclick = async () => { 
+  if ($('start')) $('start').onclick = startCamera;
+  if ($('flip')) {
+    $('flip').onclick = async function() { 
       facing = (facing === 'user') ? 'environment' : 'user'; 
       await startCamera(); 
     };
   }
-  if ($('capture'))$('capture').onclick = capturePhoto;
-  if ($('download'))$('download').onclick = downloadPhoto;
-  if ($('share'))$('share').onclick = sharePhoto;
-  if ($('instagram'))$('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-  if ($('copy'))$('copy').onclick = copyHashtag;
-  if ($('retake')) $('retake').onclick = () =>$('result').classList.add('hidden');
-  if ($('closeResult')) $('closeResult').onclick = () =>$('result').classList.add('hidden');
+  if ($('capture')) $('capture').onclick = capturePhoto;
+  if ($('download')) $('download').onclick = downloadPhoto;
+  if ($('share')) $('share').onclick = sharePhoto;
+  if ($('instagram')) $('instagram').onclick = function() { window.open('https://www.instagram.com/', '_blank'); };
+  if ($('copy')) $('copy').onclick = copyHashtag;
+  if ($('retake')) $('retake').onclick = function() { $('result').classList.add('hidden'); };
+  if ($('closeResult')) $('closeResult').onclick = function() { $('result').classList.add('hidden'); };
 
-  if ($('configBtn')) {$('configBtn').onclick = () => {
-      if ($('fCompanyName'))$('fCompanyName').value = settings.companyName;
+  if ($('configBtn')) {
+    $('configBtn').onclick = function() {
+      if ($('fCompanyName')) $('fCompanyName').value = settings.companyName;
       $('fHandle').value = settings.handle;
       $('fHashtag').value = settings.hashtag;
       $('fTitle').value = settings.title;
       $('fMessage').value = settings.message;
       $('fImage').value = settings.image.startsWith('data:') ? '' : settings.image;
-      $('saveStatus').textContent = '';$('config').classList.remove('hidden');
+      $('saveStatus').textContent = '';
+      $('config').classList.remove('hidden');
     };
   }
 
-  if ($('closeConfig')) $('closeConfig').onclick = () =>$('config').classList.add('hidden');
+  if ($('closeConfig')) $('closeConfig').onclick = function() { $('config').classList.add('hidden'); };
 
   if ($('baker')) {
-    $('baker').onerror = () =>$('baker').classList.add('empty');
-    $('baker').onload = () =>$('baker').classList.remove('empty');
+    $('baker').onerror = function() { $('baker').classList.add('empty'); };
+    $('baker').onload = function() { $('baker').classList.remove('empty'); };
   }
 
   function readFileAsDataURL(f) {
-    return new Promise((resolve, reject) => {
+    return new Promise(function(resolve, reject) {
       const r = new FileReader();
-      r.onload = () => resolve(r.result);
-      r.onerror = () => reject(new Error('Erro ao ler a imagem.'));
+      r.onload = function() { resolve(r.result); };
+      r.onerror = function() { reject(new Error('Erro ao ler a imagem.')); };
       r.readAsDataURL(f);
     });
   }
 
-  if ($('fFile')) {$('fFile').onchange = async () => {
+  if ($('fFile')) {
+    $('fFile').onchange = async function() {
       const f = $('fFile').files[0];
       if (!f) return;
       $('saveStatus').textContent = 'Processando imagem...';
@@ -658,17 +751,21 @@ document.addEventListener('DOMContentLoaded', () => {
         b.classList.remove('empty');
         $('saveStatus').textContent = 'Imagem pronta! Clique em Salvar.';
       } catch (err) {
-        $('saveStatus').textContent = 'Erro ao carregar a imagem.';
+        $('saveStatus').textContent = 'Erro ao carregar imagem.';
       }
     };
   }
 
-  if ($('form')) {$('form').onsubmit = async (e) => {
+  if ($('form')) {
+    $('form').onsubmit = async function(e) {
       e.preventDefault();
       $('saveStatus').textContent = 'Salvando...';
 
       const fileInput = $('fFile').files[0];
-      if (fileInput && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
+      const imgVal = $('fImage').value;
+
+      // LINHA CORRIGIDA: operador lógico || (OR) puro sem caracteres especiais
+      if (fileInput && (!imgVal || !imgVal.startsWith('data:'))) {
         try {
           $('fImage').value = await readFileAsDataURL(fileInput);
         } catch (err) {
@@ -678,24 +775,25 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       saveSettings({
-        companyName: $('fCompanyName') ?$('fCompanyName').value.trim() : '',
+        companyName: $('fCompanyName') ? $('fCompanyName').value.trim() : '',
         handle: $('fHandle').value,
         hashtag: $('fHashtag').value,
         title: $('fTitle').value.trim(),
         message: $('fMessage').value.trim(),
         image: $('fImage').value.trim()
       });
-      $('saveStatus').textContent = 'Configurações salvas localmente!';
-      setTimeout(() => $('config').classList.add('hidden'), 1000);
+      $('saveStatus').textContent = 'Configurações salvas!';
+      setTimeout(function() { $('config').classList.add('hidden'); }, 1000);
     };
   }
 
-  if (ADMIN && $('configBtn')) {$('configBtn').classList.remove('hidden');
+  if (ADMIN && $('configBtn')) {
+    $('configBtn').classList.remove('hidden');
   }
 
   const snowContainer = $('snow');
   if (snowContainer) {
-    for (let i = 0; i < 28; i++) {
+    for (let i = 0; i < 25; i++) {
       let flake = document.createElement('i');
       flake.textContent = '❄';
       flake.style.left = Math.random() * 100 + '%';
