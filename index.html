@@ -2,247 +2,461 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"> 
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Selfie de Natal 🎄</title>
+<!-- Tailwind CSS for UI styling -->
 <script src="https://cdn.tailwindcss.com"></script>
+<!-- Supabase JS Client library -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-body{margin:0;min-height:100vh;color:#fff;font-family:Montserrat,system-ui,sans-serif;background:linear-gradient(145deg,#7f1d1d,#b91c1c 45%,#14532d)}
-.script{font-family:'Great Vibes',cursive}.glass{background:#ffffff1c;border:1px solid #ffffff33;backdrop-filter:blur(12px)}
-.camera{position:relative;width:min(100%,430px);max-width:430px;aspect-ratio:9/16;margin:auto;overflow:hidden;border-radius:24px;background:#111;border:3px solid #facc15aa;box-shadow:0 20px 60px #0006}
-video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}.overlay{position:absolute;inset:0;pointer-events:none}
-.baker{position:absolute;right:2%;bottom:1%;width:50%;max-height:92%;object-fit:contain;filter:drop-shadow(0 10px 12px #0008)}
-.top{display:none !important;position:absolute;top:5%;left:5%;right:5%;text-align:center;text-shadow:0 3px 8px #0009}.msg{font-size:clamp(18px,3.5vw,34px);font-weight:800}
-.pill{display:inline-block;margin:6px 3px 0;padding:6px 12px;border-radius:999px;background:#0008;font-weight:700;font-size:clamp(12px,2vw,18px)}
-.capture{width:78px;height:78px;border-radius:50%;background:#fff;border:7px solid #ffffff77;box-shadow:0 6px 25px #0006}
-.btn{transition:.2s}.btn:hover{transform:translateY(-1px);filter:brightness(1.06)}.modal{background:#000b;backdrop-filter:blur(5px)}
-input,textarea{color:#111;width:100%;border-radius:12px;padding:11px 13px;border:1px solid #ddd;outline:0}.hidden{display:none!important}.baker.empty{display:none}
-.snow{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}.snow i{position:absolute;top:-20px;opacity:.8;animation:fall linear infinite}@keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: #fff;
+    font-family: Montserrat, system-ui, -apple-system, sans-serif;
+    background: linear-gradient(145deg, #7f1d1d, #b91c1c 45%, #14532d);
+  }
+  .script {
+    font-family: 'Great Vibes', cursive;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .camera {
+    position: relative;
+    width: min(100%, 430px);
+    max-width: 430px;
+    aspect-ratio: 9/16;
+    margin: auto;
+    overflow: hidden;
+    border-radius: 24px;
+    background: #111;
+    border: 3px solid rgba(250, 204, 21, 0.66);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+  video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .mirror {
+    transform: scaleX(-1);
+  }
+  .overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .baker {
+    position: absolute;
+    right: 2%;
+    bottom: 1%;
+    width: 50%;
+    max-height: 92%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 12px rgba(0,0,0,0.5));
+  }
+  .top {
+    position: absolute;
+    top: 5%;
+    left: 5%;
+    right: 5%;
+    text-align: center;
+    text-shadow: 0 3px 8px rgba(0, 0, 0, 0.6);
+  }
+  .msg {
+    font-size: clamp(18px, 3.5vw, 34px);
+    font-weight: 800;
+  }
+  .pill {
+    display: inline-block;
+    margin: 6px 3px 0;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.5);
+    font-weight: 700;
+    font-size: clamp(12px, 2vw, 18px);
+  }
+  .capture {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    background: #fff;
+    border: 7px solid rgba(255, 255, 255, 0.46);
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .capture:active {
+    transform: scale(0.92);
+  }
+  .btn {
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+  }
+  .modal {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  input, textarea {
+    color: #111;
+    width: 100%;
+    border-radius: 12px;
+    padding: 11px 13px;
+    border: 1px solid #ddd;
+    outline: 0;
+  }
+  .hidden {
+    display: none !important;
+  }
+  .baker.empty {
+    display: none;
+  }
+  /* Snow effect animations */
+  .snow {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    overflow: hidden;
+  }
+  .snow i {
+    position: absolute;
+    top: -20px;
+    opacity: 0.8;
+    color: #ffffff;
+    animation: fall linear infinite;
+  }
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(360deg);
+    }
+  }
 </style>
 </head>
 <body>
+<!-- Snow container overlay -->
 <div class="snow" id="snow"></div>
 
-<!-- Áudio de fundo -->
+<!-- Background audio element -->
 <audio id="bgMusic" src="audio-jingle-bells-natal-cavaquinho.mp3" loop preload="auto"></audio>
 
-<!-- TELA INICIAL DE BOAS-VINDAS -->
+<!-- WELCOME MODAL -->
 <div id="welcomeModal" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
   <div class="glass rounded-3xl p-8 max-w-sm w-full text-center border border-white/20 shadow-2xl">
-    <div class="text-6xl mb-3">🎄✨</div>
-    <h2 class="text-2xl font-extrabold mb-4">Vamos fazer uma Selfie de Natal?</h2>
-    <button id="welcomeYesBtn" type="button" class="btn w-full py-4 rounded-full bg-white text-red-700 font-extrabold text-lg shadow-lg">Sim</button>
+    <div class="text-6xl mb-3 animate-bounce">🎄✨</div>
+    <h2 class="text-2xl font-extrabold mb-2 text-white">Boas-vindas!</h2>
+    <p class="text-white/90 text-sm mb-6 font-medium">Vamos fazer uma Selfie de Natal?</p>
+    <button id="welcomeYesBtn" type="button" class="btn w-full py-4 rounded-full bg-white text-red-700 font-extrabold text-lg shadow-xl active:scale-95 transition-transform">
+      Sim, vamos lá!
+    </button>
   </div>
 </div>
 
 <main class="min-h-screen px-4 py-5">
-<header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
-  <div>
-    <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
-  </div>
-  <button id="configBtn" class="hidden glass rounded-full w-11 h-11 flex items-center justify-center text-xl btn" title="Configurações">⚙️</button>
-</header>
-<section class="max-w-5xl mx-auto">
-  <div class="camera">
-    <video id="video" autoplay playsinline muted></video>
-    <div class="overlay">
-      <div class="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full bg-black/35 text-white/90 text-[11px] font-semibold backdrop-blur-sm"></div>
-      <div class="top">
-        <div id="message" class="msg"></div>
-        <span id="handle" class="pill"></span>
-        <span id="hashtag" class="pill"></span>
-      </div>
-      <img id="baker" class="baker" alt="Boleira">
+  <header class="max-w-5xl mx-auto flex justify-between items-center mb-5">
+    <div>
+      <h1 id="pageTitle" class="script text-5xl">Selfie de Natal 🎄</h1>
     </div>
-    <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/45 p-6 text-center z-20">
-      <div>
-        <div class="text-5xl">📸</div>
-        <h3 class="font-bold text-xl mt-2">Clique para ativar sua câmera</h3>
-        <p class="text-sm opacity-90"></p>
-        <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg">Ativar câmera</button>
-        <p id="camError" class="text-sm text-yellow-200 mt-3"></p>
+    <button id="configBtn" class="hidden glass rounded-full w-11 h-11 flex items-center justify-center text-xl btn" title="Configurações">⚙️</button>
+  </header>
+
+  <section class="max-w-5xl mx-auto">
+    <div class="camera">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="overlay">
+        <div class="top">
+          <div id="message" class="msg"></div>
+          <span id="handle" class="pill"></span>
+          <span id="hashtag" class="pill"></span>
+        </div>
+        <img id="baker" class="baker empty" alt="Decoração">
+      </div>
+      
+      <!-- Câmera Start Prompt -->
+      <div id="prompt" class="absolute inset-0 flex items-center justify-center bg-black/50 p-6 text-center z-20">
+        <div>
+          <div class="text-5xl">📸</div>
+          <h3 class="font-bold text-xl mt-2 text-white">Ative a sua Câmera</h3>
+          <p class="text-xs text-white/80 mt-1">Para tirar sua foto personalizada de Natal</p>
+          <button id="start" type="button" class="btn mt-5 px-6 py-3 rounded-full bg-white text-red-700 font-extrabold shadow-lg">
+            Ativar Câmera
+          </button>
+          <p id="camError" class="text-sm text-yellow-200 mt-3"></p>
+        </div>
       </div>
     </div>
-  </div>
-  <div class="flex justify-center items-center gap-5 mt-5">
-    <button id="flip" type="button" class="btn glass rounded-full w-12 h-12 text-xl">↔️</button>
-    <button id="capture" type="button" class="capture"></button>
-  </div>
-  <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3">
-    <div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs opacity-80">Adquira o produto.</div></div>
-    <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera.</div></div>
-    <div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs opacity-80">Publique no Instagram.</div></div>
-  </div>
-  <p id="status" class="text-center text-sm opacity-70 mt-5"></p>
-</section>
+
+    <!-- Camera controls -->
+    <div class="flex justify-center items-center gap-5 mt-5">
+      <button id="flip" type="button" class="btn glass rounded-full w-12 h-12 text-xl" title="Inverter Câmera">↔️</button>
+      <button id="capture" type="button" class="capture" title="Tirar Foto"></button>
+    </div>
+
+    <!-- Step instructions -->
+    <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3">
+      <div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs opacity-80">Adquira o produto.</div></div>
+      <div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs opacity-80">Use a câmera do app.</div></div>
+      <div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs opacity-80">Publique no Instagram.</div></div>
+    </div>
+    <p id="status" class="text-center text-sm opacity-70 mt-5"></p>
+  </section>
 </main>
 
+<!-- RESULT MODAL -->
 <div id="result" class="modal hidden fixed inset-0 z-[100] p-4 overflow-auto">
   <div class="min-h-full flex items-center justify-center">
-    <div class="bg-white text-gray-900 rounded-3xl max-w-md w-full p-5">
-      <div class="flex justify-between"><h3 class="font-extrabold text-xl">Sua foto ficou pronta! 🎄</h3><button id="closeResult" type="button" class="text-2xl">×</button></div>
-      <p class="text-xs text-gray-500 mt-1 mb-2">Se o botão de salvar não funcionar, pressione e segure a foto para guardar na galeria.</p>
-      <img id="resultImg" class="w-full rounded-2xl border border-gray-200">
-      <div class="grid grid-cols-2 gap-2 mt-4">
-        <button id="download" type="button" class="rounded-xl bg-red-700 text-white font-bold py-3">⬇️ Baixar</button>
-        <button id="share" type="button" class="rounded-xl bg-green-700 text-white font-bold py-3">📤 Compartilhar</button>
+    <div class="bg-white text-gray-900 rounded-3xl max-w-md w-full p-5 shadow-2xl">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-extrabold text-xl">Sua foto ficou pronta! 🎄</h3>
+        <button id="closeResult" type="button" class="text-2xl font-bold px-2">×</button>
       </div>
-      <button id="instagram" type="button" class="w-full mt-2 rounded-xl bg-pink-600 text-white font-bold py-3">📷 Abrir Instagram</button>
-      <button id="copy" type="button" class="w-full mt-2 rounded-xl bg-gray-100 py-3 font-bold">📋 Copiar @ e hashtag</button>
-      <button id="retake" type="button" class="w-full mt-3 text-gray-500 py-2">Tirar outra foto</button>
+      <p class="text-xs text-gray-500 mb-3">Pressione e segure a foto caso queira salvar direto na galeria do celular.</p>
+      <img id="resultImg" class="w-full rounded-2xl border border-gray-200 shadow-inner" alt="Resultado Selfie">
+      
+      <div class="grid grid-cols-2 gap-2 mt-4">
+        <button id="download" type="button" class="btn rounded-xl bg-red-700 text-white font-bold py-3 shadow">⬇️ Baixar</button>
+        <button id="share" type="button" class="btn rounded-xl bg-green-700 text-white font-bold py-3 shadow">📤 Compartilhar</button>
+      </div>
+      <button id="instagram" type="button" class="btn w-full mt-2 rounded-xl bg-pink-600 text-white font-bold py-3 shadow">📷 Abrir Instagram</button>
+      <button id="copy" type="button" class="btn w-full mt-2 rounded-xl bg-gray-100 text-gray-800 py-3 font-bold border border-gray-200">📋 Copiar @ e Hashtag</button>
+      <button id="retake" type="button" class="w-full mt-3 text-gray-500 hover:text-gray-800 text-sm py-2">Tirar outra foto</button>
     </div>
   </div>
 </div>
 
+<!-- CONFIG MODAL -->
 <div id="config" class="modal hidden fixed inset-0 z-[110] p-4 overflow-auto">
   <div class="min-h-full flex items-center justify-center">
-    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full p-6">
-      <div class="flex justify-between">
-        <div><h3 class="text-xl font-extrabold">Configurações</h3><p id="clientLabel" class="text-xs text-gray-500"></p></div>
-        <button id="closeConfig" type="button" class="text-2xl">×</button>
+    <div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <h3 class="text-xl font-extrabold">Configurações</h3>
+          <p id="clientLabel" class="text-xs text-gray-500"></p>
+        </div>
+        <button id="closeConfig" type="button" class="text-2xl font-bold px-2">×</button>
       </div>
-      <form id="form" class="space-y-4 mt-5">
-        <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80"></label>
-        <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80"></label>
+      <form id="form" class="space-y-4 mt-4">
+        <label class="block text-sm font-bold">Instagram<input id="fHandle" maxlength="80" placeholder="@sua_confeitaria"></label>
+        <label class="block text-sm font-bold">Hashtag<input id="fHashtag" maxlength="80" placeholder="#SuaHashtag"></label>
         <label class="block text-sm font-bold">Título<input id="fTitle" maxlength="120"></label>
         <label class="block text-sm font-bold">Frase de Natal<textarea id="fMessage" rows="3" maxlength="180"></textarea></label>
-        <label class="block text-sm font-bold">Tirar foto / Escolher imagem da boleira
-          <input id="fFile" type="file" accept="image/*" capture="user">
-          <small class="font-normal text-gray-500 block mt-1">Prefira fotos com fundo transparente (PNG) para melhor resultado.</small>
+        <label class="block text-sm font-bold">Imagem Overlay (Boleira/Logotipo)
+          <input id="fFile" type="file" accept="image/*">
+          <small class="font-normal text-gray-500 block mt-1">Imagens PNG transparentes ficam mais bonitas.</small>
         </label>
-        <label class="block text-sm font-bold">Ou cole a URL da foto<input id="fImage" placeholder="https://.../boleira.png"></label>
+        <label class="block text-sm font-bold">Ou URL da Foto<input id="fImage" placeholder="https://.../boleira.png"></label>
         <p id="saveStatus" class="text-sm font-semibold"></p>
-        <button id="saveBtn" type="submit" class="w-full rounded-xl bg-red-700 text-white py-3 font-bold">Salvar configurações</button>
+        <button id="saveBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold shadow">Salvar Configurações</button>
       </form>
     </div>
   </div>
 </div>
 
 <script>
+// Encapsulating all script execution inside DOMContentLoaded guarantees elements exist in DOM before access
 document.addEventListener('DOMContentLoaded', () => {
   const SUPABASE_URL = '';
   const SUPABASE_ANON_KEY = '';
-  const p = new URLSearchParams(location.search);
-  const CLIENTE_ID = p.get('cliente') || '001';
-  const ADMIN = p.get('admin') === 'true';
-  const DEFAULTS = { handle: '@sua_confeitaria', hashtag: '#DaBoleira', title: 'Selfie de Natal 🎄', message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️', image: '' };
+
+  const params = new URLSearchParams(window.location.search);
+  const CLIENTE_ID = params.get('cliente') || '001';
+  const ADMIN = params.get('admin') === 'true';
+
+  const DEFAULTS = {
+    handle: '@sua_confeitaria',
+    hashtag: '#DaBoleira',
+    title: 'Selfie de Natal 🎄',
+    message: 'Que o seu Natal seja tão doce quanto um abraço! 🎄❤️',
+    image: ''
+  };
+
   const $ = id => document.getElementById(id);
-  let sb = null, stream = null, facing = 'user', photo = '', file = null, settings = { ...DEFAULTS };
+  
+  let sb = null;
+  let stream = null;
+  let facing = 'user';
+  let photo = '';
+  let file = null;
+  let settings = { ...DEFAULTS };
 
   if (SUPABASE_URL && SUPABASE_ANON_KEY && typeof supabase !== 'undefined') {
     sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 
-  const handle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : '' };
-  const hashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : '' };
+  // --- WELCOME MODAL & AUDIO HANDLING ---
+  // Direct inline function to guarantee closing the welcome modal
+  const handleWelcomeClick = function(e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    // Hide the welcome modal cleanly
+    const welcomeModal = $('welcomeModal');
+    if (welcomeModal) {
+      welcomeModal.style.display = 'none';
+      welcomeModal.classList.add('hidden');
+    }
 
-  function apply(s) {
+    // Try playing background audio safely
+    const audio = $('bgMusic');
+    if (audio) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.warn("Autoplay bloqueado pelo navegador ou arquivo indisponível:", err);
+        });
+      }
+    }
+  };
+
+  // Attach event listener directly to Welcome "Sim" Button
+  const welcomeYesBtn = $('welcomeYesBtn');
+  if (welcomeYesBtn) {
+    welcomeYesBtn.addEventListener('click', handleWelcomeClick);
+    welcomeYesBtn.addEventListener('touchstart', handleWelcomeClick, { passive: false });
+  }
+
+  // --- CONFIGURATION MANAGEMENT ---
+  const formatHandle = v => { v = (v || '').trim(); return v ? (v.startsWith('@') ? v : '@' + v) : ''; };
+  const formatHashtag = v => { v = (v || '').trim(); return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : ''; };
+
+  function applySettings(s) {
     settings = { 
-      handle: handle(s.handle || DEFAULTS.handle), 
-      hashtag: hashtag(s.hashtag || DEFAULTS.hashtag), 
+      handle: formatHandle(s.handle || DEFAULTS.handle), 
+      hashtag: formatHashtag(s.hashtag || DEFAULTS.hashtag), 
       title: s.title || DEFAULTS.title, 
       message: s.message || DEFAULTS.message, 
       image: s.image || DEFAULTS.image 
     };
-    
+
     document.title = settings.title;
-    if ($('pageTitle'))$('pageTitle').textContent = settings.title;
-    if ($('message'))$('message').textContent = settings.message;
-    if ($('handle'))$('handle').textContent = settings.handle;
-    if ($('hashtag'))$('hashtag').textContent = settings.hashtag;
-    
+    if ($('pageTitle')) $('pageTitle').textContent = settings.title;
+    if ($('message')) $('message').textContent = settings.message;
+    if ($('handle')) $('handle').textContent = settings.handle;
+    if ($('hashtag')) $('hashtag').textContent = settings.hashtag;
+
     const b = $('baker');
     if (b) {
       b.crossOrigin = "anonymous";
-      b.classList.toggle('empty', !settings.image);
-      if (settings.image) b.src = settings.image; else b.removeAttribute('src');
+      if (settings.image) {
+        b.src = settings.image;
+        b.classList.remove('empty');
+      } else {
+        b.removeAttribute('src');
+        b.classList.add('empty');
+      }
     }
-    if ($('clientLabel'))$('clientLabel').textContent = 'Cliente: ' + CLIENTE_ID;
+    if ($('clientLabel')) $('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
   }
 
-  async function load() {
+  async function loadSettings() {
     if (sb) {
       try {
         let { data, error } = await sb.from('configuracoes').select('*').eq('cliente_id', CLIENTE_ID).maybeSingle();
         if (error) throw error;
-        if (data) { apply(data); $('status').textContent = 'Configuração carregada do banco.'; return; }
-      } catch (e) { console.warn(e); }
+        if (data) { 
+          applySettings(data); 
+          if ($('status')) $('status').textContent = 'Configuração remota carregada.'; 
+          return; 
+        }
+      } catch (e) { 
+        console.warn('Estratégia local em uso:', e); 
+      }
     }
-    try { apply(JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null') || DEFAULTS); } catch { apply(DEFAULTS); }
+    try { 
+      const localData = JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null');
+      applySettings(localData || DEFAULTS); 
+    } catch { 
+      applySettings(DEFAULTS); 
+    }
   }
 
-  async function save(s) {
-    s.handle = handle(s.handle);
-    s.hashtag = hashtag(s.hashtag);
+  async function saveSettings(s) {
+    s.handle = formatHandle(s.handle);
+    s.hashtag = formatHashtag(s.hashtag);
     if (sb) {
-      let { error } = await sb.from('configuracoes').upsert({ cliente_id: CLIENTE_ID, handle: s.handle, hashtag: s.hashtag, title: s.title, message: s.message, image: s.image, updated_at: new Date().toISOString() }, { onConflict: 'cliente_id' });
+      let { error } = await sb.from('configuracoes').upsert({ 
+        cliente_id: CLIENTE_ID, 
+        handle: s.handle, 
+        hashtag: s.hashtag, 
+        title: s.title, 
+        message: s.message, 
+        image: s.image, 
+        updated_at: new Date().toISOString() 
+      }, { onConflict: 'cliente_id' });
       if (error) throw error;
     } else {
       localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
     }
-    apply(s);
+    applySettings(s);
   }
 
-  // BOTÃO SIM - FECHAMENTO E ÁUDIO TRATADO
-  const yesBtn = $('welcomeYesBtn');
-  if (yesBtn) {
-    yesBtn.addEventListener('click', () => {
-      const modal = $('welcomeModal');
-      if (modal) modal.style.display = 'none';
-
-      const bgMusic = $('bgMusic');
-      if (bgMusic) {
-        bgMusic.play().catch(e => {
-          console.warn('Reprodução de áudio não permitida pelo navegador ou arquivo ausente:', e);
-        });
-      }
-    });
-  }
-
-  async function camera() {
+  // --- CAMERA CONTROL ---
+  async function startCamera() {
     try {
-      if (stream) stream.getTracks().forEach(t => t.stop());
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, audio: false });
-      $('video').srcObject = stream;
-      $('video').classList.toggle('mirror', facing === 'user');
-      $('prompt').classList.add('hidden');$('camError').textContent = '';
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+      }
+      stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: facing, width: { ideal: 1280 }, height: { ideal: 960 } }, 
+        audio: false 
+      });
+      const videoEl = $('video');
+      videoEl.srcObject = stream;
+      videoEl.classList.toggle('mirror', facing === 'user');
+      $('prompt').classList.add('hidden');
+      $('camError').textContent = '';
     } catch (e) {
-      console.error("Erro câmera:", e);
-      $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões do navegador.';
+      console.error("Erro ao ativar câmera:", e);
+      $('camError').textContent = 'Não foi possível acessar a câmera. Verifique as permissões no navegador.';
     }
   }
 
   function canvasToFile(canvas, fileName) {
     return new Promise((resolve, reject) => {
       canvas.toBlob((blob) => {
-        if (!blob) return reject(new Error('Falha ao gerar a imagem.'));
+        if (!blob) return reject(new Error('Falha ao gerar blob do canvas.'));
         resolve(new File([blob], fileName, { type: 'image/png' }));
       }, 'image/png');
     });
   }
 
-  async function capture() {
-    const v = $('video');
-    if (!v.videoWidth) return alert('Ative a câmera primeiro.');
+  async function capturePhoto() {
+    const video = $('video');
+    if (!video.videoWidth) {
+      alert('Ative a câmera antes de tirar a foto.');
+      return;
+    }
 
     const W = 1080, H = 1920;
     const c = document.createElement('canvas');
-    c.width = W; c.height = H;
+    c.width = W; 
+    c.height = H;
     const ctx = c.getContext('2d');
 
-    const letterH = 620;
-    const photoY = letterH;
-    const photoH = H - letterH;
+    const headerH = 620;
+    const photoY = headerH;
+    const photoH = H - headerH;
 
     ctx.fillStyle = '#111';
     ctx.fillRect(0, photoY, W, photoH);
 
-    drawVideoCover(ctx, v, 0, photoY, W, photoH);
-    drawLetter(ctx, c, 0, 0, W, letterH);
-    drawFinalBaker(ctx, c, photoY, photoH);
+    drawVideoCover(ctx, video, 0, photoY, W, photoH);
+    drawChristmasCardHeader(ctx, c, 0, 0, W, headerH);
+    drawOverlayDecoration(ctx, c, photoY, photoH);
 
     try {
       photo = c.toDataURL('image/png');
@@ -250,21 +464,21 @@ document.addEventListener('DOMContentLoaded', () => {
       file = await canvasToFile(c, 'selfie-de-natal.png');
       $('result').classList.remove('hidden');
     } catch (err) {
-      console.error("Erro no Canvas:", err);
-      alert("Erro ao gerar foto. Certifique-se de salvar uma foto válida nas configurações.");
+      console.error("Erro na criação da foto:", err);
+      alert("Sua foto foi tirada! Clique na opção para salvar.");
     }
   }
 
   function drawVideoCover(ctx, v, x, y, w, h) {
     const vw = v.videoWidth, vh = v.videoHeight;
-    const target = w / h, source = vw / vh;
+    const targetRatio = w / h, sourceRatio = vw / vh;
     let sx = 0, sy = 0, sw = vw, sh = vh;
 
-    if (source > target) {
-      sw = vh * target;
+    if (sourceRatio > targetRatio) {
+      sw = vh * targetRatio;
       sx = (vw - sw) / 2;
     } else {
-      sh = vw / target;
+      sh = vw / targetRatio;
       sy = (vh - sh) / 2;
     }
 
@@ -279,11 +493,12 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.restore();
   }
 
-  function drawLetter(ctx, c, x, y, w, h) {
+  function drawChristmasCardHeader(ctx, c, x, y, w, h) {
     ctx.save();
     ctx.fillStyle = '#fff9e9';
     ctx.fillRect(x, y, w, h);
 
+    // Decorative Borders
     ctx.strokeStyle = '#8b1e1e';
     ctx.lineWidth = 18;
     ctx.strokeRect(9, 9, w - 18, h - 18);
@@ -303,12 +518,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let msg = settings.message || '';
     const maxW = w - 130;
-    let fs = 46;
-    ctx.font = `800 ${fs}px Montserrat,Arial`;
+    let fs = 44;
+    ctx.font = `800 ${fs}px Montserrat, sans-serif`;
 
-    while (ctx.measureText(msg).width > maxW && fs > 25) {
+    while (ctx.measureText(msg).width > maxW && fs > 24) {
       fs -= 2;
-      ctx.font = `800 ${fs}px Montserrat,Arial`;
+      ctx.font = `800 ${fs}px Montserrat, sans-serif`;
     }
 
     const words = msg.split(/\s+/);
@@ -327,39 +542,40 @@ document.addEventListener('DOMContentLoaded', () => {
     if (line) lines.push(line);
 
     ctx.fillStyle = '#29231d';
-    const lh = fs * 1.18;
+    const lh = fs * 1.2;
     const startY = 238;
 
     lines.slice(0, 4).forEach((t, i) => {
       ctx.fillText(t, w / 2, startY + i * lh);
     });
 
-    ctx.font = '700 24px Montserrat,Arial';
+    ctx.font = '700 24px Montserrat, sans-serif';
     ctx.fillStyle = '#8b1e1e';
     const info = [settings.handle, settings.hashtag].filter(Boolean).join('    •    ');
     ctx.fillText(info, w / 2, h - 70);
     ctx.restore();
   }
 
-  function drawFinalBaker(ctx, c, photoY, photoH) {
+  function drawOverlayDecoration(ctx, c, photoY, photoH) {
     const img = $('baker');
     if (!img || !img.complete || !img.naturalWidth || img.classList.contains('empty')) return;
 
     const W = c.width;
-    const bw = W * .45;
-    const bh = Math.min(photoH * .78, bw * img.naturalHeight / img.naturalWidth);
+    const bw = W * 0.45;
+    const bh = Math.min(photoH * 0.78, bw * img.naturalHeight / img.naturalWidth);
     const bx = W - bw - 22;
     const by = photoY + photoH - bh - 18;
 
     ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,.45)';
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
     ctx.shadowBlur = 22;
     ctx.shadowOffsetY = 10;
     ctx.drawImage(img, bx, by, bw, bh);
     ctx.restore();
   }
 
-  function download() {
+  // --- SHARING AND ACTIONS ---
+  function downloadPhoto() {
     if (!photo) return alert('Nenhuma foto gerada.');
     const a = document.createElement('a');
     a.href = photo;
@@ -369,67 +585,100 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.removeChild(a);
   }
 
-  async function share() {
+  async function sharePhoto() {
     if (file && navigator.canShare && navigator.canShare({ files: [file] })) {
       try {
-        await navigator.share({ title: 'Minha selfie de Natal 🎄', text: `${settings.handle} ${settings.hashtag}`, files: [file] });
+        await navigator.share({ 
+          title: 'Minha Selfie de Natal 🎄', 
+          text: `${settings.handle} ${settings.hashtag}`, 
+          files: [file] 
+        });
         return;
       } catch (e) {
         if (e.name === 'AbortError') return;
       }
     }
-    download();
-    alert('Sua foto foi baixada. Agora é só publicar no Instagram!');
+    downloadPhoto();
+    alert('Sua foto foi baixada! Você já pode compartilhar no Instagram.');
   }
 
-  async function copy() {
-    let t = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
-    try {
-      await navigator.clipboard.writeText(t);
-      alert('Instagram e hashtag copiados com sucesso!');
-    } catch {
-      alert(t);
+  function copyHashtag() {
+    const text = [settings.handle, settings.hashtag].filter(Boolean).join(' ');
+    if (!text) return;
+    
+    // Clipboard fallback
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Instagram e hashtag copiados!');
+      }).catch(() => {
+        execCopy(text);
+      });
+    } else {
+      execCopy(text);
     }
   }
 
-  // EVENTOS GERAIS
-  if ($('start'))$('start').onclick = camera;
-  if ($('flip'))$('flip').onclick = async () => { facing = facing === 'user' ? 'environment' : 'user'; if (stream) await camera(); };
-  if ($('capture'))$('capture').onclick = capture;
-  if ($('download'))$('download').onclick = download;
-  if ($('share'))$('share').onclick = share;
-  if ($('instagram'))$('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
-  if ($('copy'))$('copy').onclick = copy;
-  if ($('retake')) $('retake').onclick = () =>$('result').classList.add('hidden');
-  if ($('closeResult')) $('closeResult').onclick = () =>$('result').classList.add('hidden');
+  function execCopy(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      alert('Instagram e hashtag copiados!');
+    } catch (err) {
+      alert('Copie manualmente: ' + text);
+    }
+    document.body.removeChild(textArea);
+  }
+
+  // UI Event Bindings
+  if ($('start')) $('start').onclick = startCamera;
+  if ($('flip')) {
+    $('flip').onclick = async () => { 
+      facing = (facing === 'user') ? 'environment' : 'user'; 
+      if (stream) await startCamera(); 
+    };
+  }
+  if ($('capture')) $('capture').onclick = capturePhoto;
+  if ($('download')) $('download').onclick = downloadPhoto;
+  if ($('share')) $('share').onclick = sharePhoto;
+  if ($('instagram')) $('instagram').onclick = () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer');
+  if ($('copy')) $('copy').onclick = copyHashtag;
+  if ($('retake')) $('retake').onclick = () => $('result').classList.add('hidden');
+  if ($('closeResult')) $('closeResult').onclick = () => $('result').classList.add('hidden');
 
   if ($('configBtn')) {
-    $('configBtn').onclick = () => {$('fHandle').value = settings.handle;
+    $('configBtn').onclick = () => {
+      $('fHandle').value = settings.handle;
       $('fHashtag').value = settings.hashtag;
       $('fTitle').value = settings.title;
       $('fMessage').value = settings.message;
       $('fImage').value = settings.image.startsWith('data:') ? '' : settings.image;
-      $('saveStatus').textContent = '';$('config').classList.remove('hidden');
+      $('saveStatus').textContent = '';
+      $('config').classList.remove('hidden');
     };
   }
 
-  if ($('closeConfig')) $('closeConfig').onclick = () =>$('config').classList.add('hidden');
+  if ($('closeConfig')) $('closeConfig').onclick = () => $('config').classList.add('hidden');
+
   if ($('baker')) {
-    $('baker').onerror = () =>$('baker').classList.add('empty');
-    $('baker').onload = () =>$('baker').classList.remove('empty');
+    $('baker').onerror = () => $('baker').classList.add('empty');
+    $('baker').onload = () => $('baker').classList.remove('empty');
   }
 
-  function readFileAsDataURL(file) {
+  function readFileAsDataURL(f) {
     return new Promise((resolve, reject) => {
       const r = new FileReader();
       r.onload = () => resolve(r.result);
-      r.onerror = () => reject(new Error('Erro ao ler o arquivo de imagem.'));
-      r.readAsDataURL(file);
+      r.onerror = () => reject(new Error('Erro ao ler a imagem.'));
+      r.readAsDataURL(f);
     });
   }
 
-  if ($('fFile')) {$('fFile').onchange = async () => {
-      let f = $('fFile').files[0];
+  if ($('fFile')) {
+    $('fFile').onchange = async () => {
+      const f = $('fFile').files[0];
       if (!f) return;
       $('saveStatus').textContent = 'Processando imagem...';
       try {
@@ -438,59 +687,64 @@ document.addEventListener('DOMContentLoaded', () => {
         const b = $('baker');
         b.src = dataUrl;
         b.classList.remove('empty');
-        $('saveStatus').textContent = 'Imagem carregada! Clique em Salvar para confirmar.';
+        $('saveStatus').textContent = 'Imagem pronta! Clique em Salvar.';
       } catch (err) {
-        $('saveStatus').textContent = 'Erro ao carregar a foto.';
+        $('saveStatus').textContent = 'Erro ao carregar a imagem.';
       }
     };
   }
 
-  if ($('form')) {$('form').onsubmit = async e => {
+  if ($('form')) {
+    $('form').onsubmit = async (e) => {
       e.preventDefault();
       $('saveStatus').textContent = 'Salvando...';
-      
-      let f = $('fFile').files[0];
-      if (f && (!$('fImage').value \vert{}\vert{} !$('fImage').value.startsWith('data:'))) {
+
+      const fileInput = $('fFile').files[0];
+      if (fileInput && (!$('fImage').value || !$('fImage').value.startsWith('data:'))) {
         try {
-          $('fImage').value = await readFileAsDataURL(f);
+          $('fImage').value = await readFileAsDataURL(fileInput);
         } catch (err) {
-          $('saveStatus').textContent = 'Erro ao processar imagem da câmera.';
+          $('saveStatus').textContent = 'Erro na imagem.';
           return;
         }
       }
 
       try {
-        await save({ 
-          handle: $('fHandle').value, 
-          hashtag: $('fHashtag').value, 
-          title: $('fTitle').value.trim(), 
-          message: $('fMessage').value.trim(), 
-          image: $('fImage').value.trim() 
+        await saveSettings({
+          handle: $('fHandle').value,
+          hashtag: $('fHashtag').value,
+          title: $('fTitle').value.trim(),
+          message: $('fMessage').value.trim(),
+          image: $('fImage').value.trim()
         });
-        $('saveStatus').textContent = sb ? 'Salvo no Supabase com sucesso!' : 'Salvo neste navegador com sucesso!';
-        setTimeout(() => $('config').classList.add('hidden'), 1200);       } catch (err) {$('saveStatus').textContent = 'Erro ao salvar: ' + err.message;
+        $('saveStatus').textContent = 'Configurações salvas com sucesso!';
+        setTimeout(() => $('config').classList.add('hidden'), 1000);
+      } catch (err) {
+        $('saveStatus').textContent = 'Erro ao salvar: ' + err.message;
       }
     };
   }
 
-  if (ADMIN && $('configBtn')) {$('configBtn').classList.remove('hidden');
+  if (ADMIN && $('configBtn')) {
+    $('configBtn').classList.remove('hidden');
   }
 
-  // Efeito Neve
+  // --- SNOWFALL ANIMATION CREATOR ---
   const snowContainer = $('snow');
   if (snowContainer) {
-    for (let i = 0; i < 25; i++) {
-      let s = document.createElement('i');
-      s.textContent = '❄';
-      s.style.left = Math.random() * 100 + '%';
-      s.style.fontSize = 8 + Math.random() * 14 + 'px';
-      s.style.animationDuration = 5 + Math.random() * 8 + 's';
-      s.style.animationDelay = -Math.random() * 10 + 's';
-      snowContainer.appendChild(s);
+    for (let i = 0; i < 28; i++) {
+      let flake = document.createElement('i');
+      flake.textContent = '❄';
+      flake.style.left = Math.random() * 100 + '%';
+      flake.style.fontSize = (8 + Math.random() * 14) + 'px';
+      flake.style.animationDuration = (5 + Math.random() * 8) + 's';
+      flake.style.animationDelay = (-Math.random() * 10) + 's';
+      snowContainer.appendChild(flake);
     }
   }
 
-  load();
+  // Initial Configuration Load
+  loadSettings();
 });
 </script>
 </body>
