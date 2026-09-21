@@ -55,7 +55,7 @@ video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}.over
 <div class="max-w-2xl mx-auto mt-7 grid sm:grid-cols-3 gap-3"><div class="glass rounded-2xl p-4 text-center">🛍️<div class="font-bold">1. Compre</div><div class="text-xs">Adquira o produto.</div></div><div class="glass rounded-2xl p-4 text-center">📸<div class="font-bold">2. Tire a selfie</div><div class="text-xs">Use a câmera do celular.</div></div><div class="glass rounded-2xl p-4 text-center">🎁<div class="font-bold">3. Compartilhe</div><div class="text-xs">Publique no Instagram.</div></div></div>
 </section></main>
 
-<div id="loginModal" class="modal hidden fixed inset-0 z-110 p-4 overflow-auto"><div class="min-h-full flex items-center justify-center"><div class="bg-white text-gray-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl"><div class="flex justify-between items-center border-b pb-3"><div><h3 class="text-xl font-extrabold">Área do administrador</h3><p class="text-xs text-gray-500">Digite seu login e senha.</p></div><button id="closeLogin" type="button" class="text-2xl font-bold px-2 btn">×</button></div><form id="loginForm" class="space-y-4 mt-4"><label class="block text-sm font-bold">Login<input id="adminUser" autocomplete="username" required></label><label class="block text-sm font-bold">Senha<input id="adminPass" type="password" autocomplete="current-password" required></label><p id="loginError" class="text-sm font-bold text-red-700"></p><button type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold">Entrar</button></form></div></div></div>
+<div id="loginModal" class="modal hidden fixed inset-0 z-110 p-4 overflow-auto"><div class="min-h-full flex items-center justify-center"><div class="bg-white text-gray-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl"><div class="flex justify-between items-center border-b pb-3"><div><h3 class="text-xl font-extrabold">Área do administrador</h3><p class="text-xs text-gray-500">Digite seu login e senha.</p></div><button id="closeLogin" type="button" class="text-2xl font-bold px-2 btn">×</button></div><form id="loginForm" class="space-y-4 mt-4"><label class="block text-sm font-bold">E-mail<input id="adminUser" type="email" autocomplete="username" placeholder="admin@exemplo.com" required></label><label class="block text-sm font-bold">Senha<input id="adminPass" type="password" autocomplete="current-password" required></label><p class="small-note">Seu acesso é protegido pelo Supabase Auth. A senha não fica gravada neste HTML.</p><p id="loginError" class="text-sm font-bold text-red-700"></p><button id="loginBtn" type="submit" class="btn w-full rounded-xl bg-red-700 text-white py-3 font-bold">Entrar</button></form></div></div></div>
 
 <div id="config" class="modal hidden fixed inset-0 z-110 p-4 overflow-auto"><div class="min-h-full flex items-center justify-center"><div class="bg-white text-gray-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl"><div class="flex justify-between items-center border-b pb-3"><div><h3 class="text-xl font-extrabold">Configurações da promoção</h3><p id="clientLabel" class="text-xs text-gray-500"></p></div><button id="closeConfig" type="button" class="text-2xl font-bold px-2 btn">×</button></div>
 <form id="form" class="space-y-4 mt-4">
@@ -76,61 +76,417 @@ video{width:100%;height:100%;object-fit:cover}.mirror{transform:scaleX(-1)}.over
 
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-  const params=new URLSearchParams(location.search); const CLIENTE_ID=params.get('cliente')||'001';
-  // ========================= ADMIN =========================
-  // Troque estes dois valores antes de entregar o site à cliente.
-  const ADMIN_LOGIN='admin'; const ADMIN_PASSWORD='1234';
-  // ========================= SUPABASE =========================
-  // Cole aqui a URL e a chave ANON do seu projeto Supabase.
-  const SUPABASE_URL='COLE_AQUI_SUA_URL_SUPABASE';
-  const SUPABASE_ANON_KEY='COLE_AQUI_SUA_CHAVE_ANON_SUPABASE';
-  const supabaseReady=window.supabase && SUPABASE_URL.startsWith('https://') && !SUPABASE_URL.includes('COLE_AQUI') && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes('COLE_AQUI');
-  const sb=supabaseReady?window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+  const params = new URLSearchParams(location.search);
+  const CLIENTE_ID = params.get('cliente') || '001';
 
-  const DEFAULTS={handle:'@suaconfeitaria',hashtag:'#NatalInesquecivel',title:'Selfie de Natal 🎄',message:'Que o seu Natal seja cheio de paz, amor e doçura! 🎄❤️',image:''};
-  const $=id=>document.getElementById(id); let stream=null,facing='user',photo='',file=null,settings={...DEFAULTS}; let pendingImage='';
-  const formatHandle=v=>{v=(v||'').trim();return v?(v.startsWith('@')?v:'@'+v):''};
-  const formatHashtag=v=>{v=(v||'').trim();return v?(v.startsWith('#')?v:'#'+v.replace(/^#+/,'')):''};
+  // =========================================================
+  // SUPABASE
+  // Cole aqui os dados PUBLICÁVEIS do seu projeto Supabase.
+  // NUNCA coloque a service_role key neste HTML.
+  // =========================================================
+  const SUPABASE_URL = 'COLE_AQUI_SUA_URL_SUPABASE';
+  const SUPABASE_ANON_KEY = 'COLE_AQUI_SUA_CHAVE_ANON_OU_PUBLISHABLE_KEY';
+  const supabaseReady = !!(
+    window.supabase &&
+    SUPABASE_URL.startsWith('https://') &&
+    !SUPABASE_URL.includes('COLE_AQUI') &&
+    SUPABASE_ANON_KEY &&
+    !SUPABASE_ANON_KEY.includes('COLE_AQUI')
+  );
+  const sb = supabaseReady ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-  function applySettings(s){settings={handle:formatHandle(s.handle||DEFAULTS.handle),hashtag:formatHashtag(s.hashtag||DEFAULTS.hashtag),title:s.title||DEFAULTS.title,message:s.message||DEFAULTS.message,image:s.image||DEFAULTS.image};document.title=settings.title;$('pageTitle').textContent=settings.title;$('message').textContent=settings.message;$('handle').textContent=settings.handle;$('hashtag').textContent=settings.hashtag;$('clientLabel').textContent='Cliente ID: '+CLIENTE_ID; const b=$('baker'); if(settings.image){b.src=settings.image;b.classList.remove('empty')}else{b.removeAttribute('src');b.classList.add('empty')}}
-  function localLoad(){try{const d=JSON.parse(localStorage.getItem('_config_'+CLIENTE_ID)||'null');if(d)applySettings(d);else applySettings(DEFAULTS)}catch(e){applySettings(DEFAULTS)}}
-  function localSave(s){localStorage.setItem('_config_'+CLIENTE_ID,JSON.stringify(s))}
+  const STORAGE_BUCKET = 'promocao-fotos';
+  const DEFAULTS = {
+    handle: '@suaconfeitaria',
+    hashtag: '#NatalInesquecivel',
+    title: 'Selfie de Natal 🎄',
+    message: 'Que o seu Natal seja cheio de paz, amor e doçura! 🎄❤️',
+    image: ''
+  };
+
+  const $ = id => document.getElementById(id);
+  let stream = null;
+  let facing = 'user';
+  let photo = '';
+  let file = null;
+  let settings = {...DEFAULTS};
+  let pendingImage = '';
+  let pendingImageChanged = false;
+  let currentUser = null;
+  let currentAdmin = null;
+
+  const formatHandle = v => {
+    v = (v || '').trim();
+    return v ? (v.startsWith('@') ? v : '@' + v) : '';
+  };
+  const formatHashtag = v => {
+    v = (v || '').trim();
+    return v ? (v.startsWith('#') ? v : '#' + v.replace(/^#+/, '')) : '';
+  };
+
+  function applySettings(s){
+    settings = {
+      handle: formatHandle(s.handle || DEFAULTS.handle),
+      hashtag: formatHashtag(s.hashtag || DEFAULTS.hashtag),
+      title: s.title || DEFAULTS.title,
+      message: s.message || DEFAULTS.message,
+      image: s.image || DEFAULTS.image
+    };
+    document.title = settings.title;
+    $('pageTitle').textContent = settings.title;
+    $('message').textContent = settings.message;
+    $('handle').textContent = settings.handle;
+    $('hashtag').textContent = settings.hashtag;
+    $('clientLabel').textContent = 'Cliente ID: ' + CLIENTE_ID;
+    const baker = $('baker');
+    if (settings.image) {
+      baker.src = settings.image;
+      baker.classList.remove('empty');
+    } else {
+      baker.removeAttribute('src');
+      baker.classList.add('empty');
+    }
+  }
+
+  function localLoad(){
+    try {
+      const d = JSON.parse(localStorage.getItem('_config_' + CLIENTE_ID) || 'null');
+      applySettings(d || DEFAULTS);
+    } catch(e) {
+      applySettings(DEFAULTS);
+    }
+  }
 
   async function loadSettings(){
-    if(sb){try{const {data,error}=await sb.from('promocao_config').select('*').eq('cliente_id',CLIENTE_ID).maybeSingle();if(!error&&data){applySettings(data);localSave(data);return}}catch(e){console.warn('Supabase indisponível',e)}}
-    localLoad();
-  }
-  async function saveSettings(s){s.handle=formatHandle(s.handle);s.hashtag=formatHashtag(s.hashtag);applySettings(s);localSave(s);
-    if(!sb){$('saveStatus').textContent='Salvo neste aparelho. Para aparecer em outros celulares, configure o Supabase no início do HTML.';return true}
-    try{const {error}=await sb.from('promocao_config').upsert({cliente_id:CLIENTE_ID,handle:s.handle,hashtag:s.hashtag,title:s.title,message:s.message,image:s.image,updated_at:new Date().toISOString()},{onConflict:'cliente_id'});if(error)throw error;$('saveStatus').textContent='Configurações salvas no site. Já podem aparecer em outros celulares.';return true}catch(e){console.error(e);$('saveStatus').textContent='Salvo neste aparelho, mas não foi possível sincronizar com o banco. Verifique o Supabase.';return false}
+    if (!sb) {
+      localLoad();
+      return;
+    }
+    try {
+      const {data, error} = await sb
+        .from('promocao_config')
+        .select('cliente_id,handle,hashtag,title,message,image_url,updated_at')
+        .eq('cliente_id', CLIENTE_ID)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) {
+        applySettings({
+          ...data,
+          image: data.image_url || ''
+        });
+      } else {
+        applySettings(DEFAULTS);
+      }
+    } catch(e) {
+      console.error('Erro ao carregar configuração:', e);
+      localLoad();
+    }
   }
 
-  async function startCamera(){const prompt=$('prompt'),err=$('camError'),btn=$('start');try{if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Câmera exige HTTPS ou localhost.');if(stream)stream.getTracks().forEach(t=>t.stop());let constraints={video:{facingMode:facing,width:{ideal:1280},height:{ideal:1920},aspectRatio:{ideal:9/16}},audio:false};try{stream=await navigator.mediaDevices.getUserMedia(constraints)}catch(e){stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false})}const v=$('video');v.srcObject=stream;await v.play();v.classList.toggle('mirror',facing==='user');prompt.classList.add('hidden');err.textContent=''}catch(e){console.error(e);prompt.classList.remove('hidden');btn.textContent='Tentar Novamente';err.innerHTML='Não foi possível abrir a câmera.<br>Verifique a permissão do navegador e se o site está em HTTPS.'}}
+  async function ensureAdminForClient(user){
+    if (!sb || !user) return null;
+    const {data, error} = await sb
+      .from('admin_clientes')
+      .select('id,cliente_id,email,nome,ativo')
+      .eq('user_id', user.id)
+      .eq('cliente_id', CLIENTE_ID)
+      .eq('ativo', true)
+      .maybeSingle();
+    if (error) {
+      console.error('Erro verificando administrador:', error);
+      throw error;
+    }
+    return data || null;
+  }
 
-  function canvasToFile(c,name){return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(new File([b],name,{type:'image/png'})):reject(new Error('Falha ao gerar imagem')),'image/png'))}
-  function drawVideoCover(ctx,v,x,y,w,h){const vw=v.videoWidth,vh=v.videoHeight,target=w/h,source=vw/vh;let sx=0,sy=0,sw=vw,sh=vh;if(source>target){sw=vh*target;sx=(vw-sw)/2}else{sh=vw/target;sy=(vh-sh)/2}ctx.save();if(facing==='user'){ctx.translate(x+w,y);ctx.scale(-1,1);ctx.drawImage(v,sx,sy,sw,sh,0,0,w,h)}else ctx.drawImage(v,sx,sy,sw,sh,x,y,w,h);ctx.restore()}
-  function drawChristmasCardHeader(ctx,w,h){ctx.save();ctx.fillStyle='#fff9e9';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#8b1e1e';ctx.lineWidth=18;ctx.strokeRect(9,9,w-18,h-18);ctx.strokeStyle='#d6a928';ctx.lineWidth=5;ctx.strokeRect(29,29,w-58,h-58);ctx.textAlign='center';ctx.font='38px serif';ctx.fillStyle='#8b1e1e';ctx.fillText('🎄    ✦    🎁    ✦    🎅',w/2,92);ctx.fillStyle='#7b1f1f';ctx.font="700 48px 'Great Vibes',cursive";ctx.fillText('Feliz Natal!',w/2,158);let msg=settings.message||'',maxW=w-130,fs=44;ctx.font='800 '+fs+'px Montserrat,sans-serif';while(ctx.measureText(msg).width>maxW&&fs>24){fs-=2;ctx.font='800 '+fs+'px Montserrat,sans-serif'}const words=msg.split(/\s+/),lines=[];let line='';for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=word}else line=test}if(line)lines.push(line);ctx.fillStyle='#29231d';const lh=fs*1.2;lines.slice(0,4).forEach((t,i)=>ctx.fillText(t,w/2,238+i*lh));ctx.font='700 24px Montserrat,sans-serif';ctx.fillStyle='#8b1e1e';ctx.fillText([settings.handle,settings.hashtag].filter(Boolean).join('    •    '),w/2,h-70);ctx.restore()}
-  function drawBaker(ctx,c,photoY,photoH){const img=$('baker');if(!img||!img.complete||!img.naturalWidth||img.classList.contains('empty'))return;const W=c.width,bw=W*.45,bh=Math.min(photoH*.78,bw*img.naturalHeight/img.naturalWidth),bx=W-bw-22,by=photoY+photoH-bh-18;ctx.save();ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;ctx.drawImage(img,bx,by,bw,bh);ctx.restore()}
-  async function capturePhoto(){const v=$('video');if(!v||!v.videoWidth)return alert('Ative a câmera antes de tirar a foto.');const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;const ctx=c.getContext('2d'),headerH=620,photoY=headerH,photoH=H-headerH;ctx.fillStyle='#111';ctx.fillRect(0,photoY,W,photoH);drawVideoCover(ctx,v,0,photoY,W,photoH);drawChristmasCardHeader(ctx,W,headerH);drawBaker(ctx,c,photoY,photoH);photo=c.toDataURL('image/png');$('resultImg').src=photo;file=await canvasToFile(c,'selfie-de-natal.png');$('result').classList.remove('hidden')}
+  async function uploadPendingImage(){
+    if (!sb || !pendingImageChanged || !pendingImage) return settings.image || '';
+
+    const response = await fetch(pendingImage);
+    const blob = await response.blob();
+    const path = CLIENTE_ID + '/boleira.jpg';
+
+    const {error: uploadError} = await sb.storage
+      .from(STORAGE_BUCKET)
+      .upload(path, blob, {
+        contentType: 'image/jpeg',
+        cacheControl: '3600',
+        upsert: true
+      });
+    if (uploadError) throw uploadError;
+
+    const {data} = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+    if (!data || !data.publicUrl) throw new Error('Não foi possível obter a URL pública da imagem.');
+
+    return data.publicUrl + '?v=' + Date.now();
+  }
+
+  async function saveSettings(s){
+    s.handle = formatHandle(s.handle);
+    s.hashtag = formatHashtag(s.hashtag);
+
+    if (!sb) {
+      applySettings(s);
+      localStorage.setItem('_config_' + CLIENTE_ID, JSON.stringify(s));
+      $('saveStatus').textContent = 'Supabase não configurado: salvo somente neste aparelho.';
+      return false;
+    }
+
+    if (!currentUser || !currentAdmin) {
+      $('saveStatus').textContent = 'Sua sessão administrativa expirou. Entre novamente.';
+      return false;
+    }
+
+    try {
+      $('saveStatus').textContent = 'Enviando imagem e salvando...';
+      const imageUrl = await uploadPendingImage();
+
+      const row = {
+        cliente_id: CLIENTE_ID,
+        handle: s.handle,
+        hashtag: s.hashtag,
+        title: s.title,
+        message: s.message,
+        image_url: imageUrl,
+        updated_at: new Date().toISOString()
+      };
+
+      const {error} = await sb
+        .from('promocao_config')
+        .upsert(row, {onConflict: 'cliente_id'});
+      if (error) throw error;
+
+      applySettings({...s, image: imageUrl});
+      pendingImage = imageUrl;
+      pendingImageChanged = false;
+      $('saveStatus').textContent = 'Configurações salvas no site! Já estão disponíveis em outros celulares.';
+      return true;
+    } catch(e) {
+      console.error('Erro ao salvar:', e);
+      $('saveStatus').textContent = 'Erro ao salvar. Verifique o Supabase, as políticas RLS e o Storage.';
+      return false;
+    }
+  }
+
+  async function startCamera(){
+    const prompt = $('prompt');
+    const err = $('camError');
+    const btn = $('start');
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Câmera exige HTTPS ou localhost.');
+      }
+      if (stream) stream.getTracks().forEach(t => t.stop());
+      const constraints = {
+        video: {
+          facingMode: facing,
+          width: {ideal: 1280},
+          height: {ideal: 1920},
+          aspectRatio: {ideal: 9/16}
+        },
+        audio: false
+      };
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch(e) {
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:facing},audio:false});
+      }
+      const v = $('video');
+      v.srcObject = stream;
+      await v.play();
+      v.classList.toggle('mirror', facing === 'user');
+      prompt.classList.add('hidden');
+      err.textContent = '';
+    } catch(e) {
+      console.error(e);
+      prompt.classList.remove('hidden');
+      btn.textContent = 'Tentar Novamente';
+      err.innerHTML = 'Não foi possível abrir a câmera.<br>Verifique a permissão do navegador e se o site está em HTTPS.';
+    }
+  }
+
+  function canvasToFile(c,name){
+    return new Promise((resolve,reject)=>c.toBlob(b=>b?resolve(new File([b],name,{type:'image/png'})):reject(new Error('Falha ao gerar imagem')),'image/png'));
+  }
+  function drawVideoCover(ctx,v,x,y,w,h){
+    const vw=v.videoWidth,vh=v.videoHeight,target=w/h,source=vw/vh;
+    let sx=0,sy=0,sw=vw,sh=vh;
+    if(source>target){sw=vh*target;sx=(vw-sw)/2}else{sh=vw/target;sy=(vh-sh)/2}
+    ctx.save();
+    if(facing==='user'){ctx.translate(x+w,y);ctx.scale(-1,1);ctx.drawImage(v,sx,sy,sw,sh,0,0,w,h)}
+    else ctx.drawImage(v,sx,sy,sw,sh,x,y,w,h);
+    ctx.restore();
+  }
+  function drawChristmasCardHeader(ctx,w,h){
+    ctx.save();
+    ctx.fillStyle='#fff9e9';ctx.fillRect(0,0,w,h);
+    ctx.strokeStyle='#8b1e1e';ctx.lineWidth=18;ctx.strokeRect(9,9,w-18,h-18);
+    ctx.strokeStyle='#d6a928';ctx.lineWidth=5;ctx.strokeRect(29,29,w-58,h-58);
+    ctx.textAlign='center';ctx.font='38px serif';ctx.fillStyle='#8b1e1e';ctx.fillText('🎄    ✦    🎁    ✦    🎅',w/2,92);
+    ctx.fillStyle='#7b1f1f';ctx.font="700 48px 'Great Vibes',cursive";ctx.fillText('Feliz Natal!',w/2,158);
+    let msg=settings.message||'',maxW=w-130,fs=44;ctx.font='800 '+fs+'px Montserrat,sans-serif';
+    while(ctx.measureText(msg).width>maxW&&fs>24){fs-=2;ctx.font='800 '+fs+'px Montserrat,sans-serif'}
+    const words=msg.split(/\s+/),lines=[];let line='';
+    for(const word of words){const test=line?line+' '+word:word;if(ctx.measureText(test).width>maxW&&line){lines.push(line);line=word}else line=test}
+    if(line)lines.push(line);
+    ctx.fillStyle='#29231d';const lh=fs*1.2;lines.slice(0,4).forEach((t,i)=>ctx.fillText(t,w/2,238+i*lh));
+    ctx.font='700 24px Montserrat,sans-serif';ctx.fillStyle='#8b1e1e';ctx.fillText([settings.handle,settings.hashtag].filter(Boolean).join('    •    '),w/2,h-70);
+    ctx.restore();
+  }
+  function drawBaker(ctx,c,photoY,photoH){
+    const img=$('baker');
+    if(!img||!img.complete||!img.naturalWidth||img.classList.contains('empty'))return;
+    const W=c.width,bw=W*.45,bh=Math.min(photoH*.78,bw*img.naturalHeight/img.naturalWidth),bx=W-bw-22,by=photoY+photoH-bh-18;
+    ctx.save();ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=22;ctx.shadowOffsetY=10;ctx.drawImage(img,bx,by,bw,bh);ctx.restore();
+  }
+  async function capturePhoto(){
+    const v=$('video');
+    if(!v||!v.videoWidth)return alert('Ative a câmera antes de tirar a foto.');
+    const W=1080,H=1920,c=document.createElement('canvas');c.width=W;c.height=H;
+    const ctx=c.getContext('2d'),headerH=620,photoY=headerH,photoH=H-headerH;
+    ctx.fillStyle='#111';ctx.fillRect(0,photoY,W,photoH);
+    drawVideoCover(ctx,v,0,photoY,W,photoH);
+    drawChristmasCardHeader(ctx,W,headerH);
+    drawBaker(ctx,c,photoY,photoH);
+    photo=c.toDataURL('image/png');$('resultImg').src=photo;file=await canvasToFile(c,'selfie-de-natal.png');$('result').classList.remove('hidden');
+  }
 
   function downloadPhoto(){if(!photo)return alert('Nenhuma foto gerada.');const a=document.createElement('a');a.href=photo;a.download='selfie-de-natal.png';document.body.appendChild(a);a.click();a.remove()}
   async function sharePhoto(){if(file&&navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({title:'Minha Selfie de Natal 🎄',text:settings.handle+' '+settings.hashtag,files:[file]});return}catch(e){if(e.name==='AbortError')return}}downloadPhoto()}
   function copyHashtag(){const t=[settings.handle,settings.hashtag].filter(Boolean).join(' ');if(!t)return;const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');alert('Instagram e hashtag copiados!')}catch(e){alert('Copie manualmente: '+t)}ta.remove()}
 
-  function openLogin(){ $('loginModal').classList.remove('hidden');$('adminUser').focus();$('loginError').textContent=''}
-  function openConfig(){ $('adminUser').value='';$('adminPass').value='';$('fHandle').value=settings.handle;$('fHashtag').value=settings.hashtag;$('fTitle').value=settings.title;$('fMessage').value=settings.message;$('fFile').value='';$('fCameraFile').value='';pendingImage=settings.image||'';$('imagePreview').src=pendingImage||'';$('imagePreview').style.display=pendingImage?'block':'none';$('saveStatus').textContent='';$('config').classList.remove('hidden') }
-  function readFileAsDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Erro ao ler imagem'));r.readAsDataURL(f)})}
-  async function compressImage(file){const src=await readFileAsDataURL(file);const img=new Image();img.src=src;await new Promise((res,rej)=>{img.onload=res;img.onerror=rej});const max=1100,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*scale);c.height=Math.round(img.naturalHeight*scale);c.getContext('2d').drawImage(img,0,0,c.width,c.height);return c.toDataURL('image/jpeg',.82)}
-  async function handleImageFile(input){const f=input.files&&input.files[0];if(!f)return;$('saveStatus').textContent='Preparando imagem...';try{pendingImage=await compressImage(f);$('imagePreview').src=pendingImage;$('imagePreview').style.display='block';$('saveStatus').textContent='Imagem pronta. Clique em Salvar configuração.'}catch(e){$('saveStatus').textContent='Não foi possível carregar a imagem.'}}
+  function openLogin(){
+    if(!sb){
+      $('loginModal').classList.remove('hidden');
+      $('loginError').textContent='Configure SUPABASE_URL e SUPABASE_ANON_KEY antes de usar o login.';
+      return;
+    }
+    $('loginModal').classList.remove('hidden');
+    $('loginError').textContent='';
+    $('adminUser').focus();
+  }
 
-  $('gearBtn').onclick=openLogin;$('closeLogin').onclick=()=> $('loginModal').classList.add('hidden');$('loginForm').onsubmit=function(e){e.preventDefault();if($('adminUser').value===ADMIN_LOGIN&&$('adminPass').value===ADMIN_PASSWORD){$('loginModal').classList.add('hidden');openConfig()}else $('loginError').textContent='Login ou senha incorretos.'};$('closeConfig').onclick=()=> $('config').classList.add('hidden');$('logoutBtn').onclick=()=> $('config').classList.add('hidden');
-  $('galleryBtn').onclick=()=> $('fFile').click();$('cameraFileBtn').onclick=()=> $('fCameraFile').click();$('fFile').onchange=()=>handleImageFile($('fFile'));$('fCameraFile').onchange=()=>handleImageFile($('fCameraFile'));
-  $('form').onsubmit=async function(e){e.preventDefault();$('saveStatus').textContent='Salvando...';const s={handle:$('fHandle').value,hashtag:$('fHashtag').value,title:$('fTitle').value.trim(),message:$('fMessage').value.trim(),image:pendingImage||''};await saveSettings(s);if($('saveStatus').textContent.includes('salvas'))setTimeout(()=>$('config').classList.add('hidden'),900)};
-  $('start').onclick=startCamera;$('flip').onclick=async()=>{facing=facing==='user'?'environment':'user';await startCamera()};$('capture').onclick=capturePhoto;$('download').onclick=downloadPhoto;$('share').onclick=sharePhoto;$('instagram').onclick=()=>window.open('https://www.instagram.com/','_blank');$('copy').onclick=copyHashtag;$('retake').onclick=()=> $('result').classList.add('hidden');$('closeResult').onclick=()=> $('result').classList.add('hidden');
+  async function openConfig(){
+    $('fHandle').value=settings.handle;
+    $('fHashtag').value=settings.hashtag;
+    $('fTitle').value=settings.title;
+    $('fMessage').value=settings.message;
+    $('fFile').value='';
+    $('fCameraFile').value='';
+    pendingImage=settings.image||'';
+    pendingImageChanged=false;
+    $('imagePreview').src=pendingImage||'';
+    $('imagePreview').style.display=pendingImage?'block':'none';
+    $('saveStatus').textContent='';
+    $('config').classList.remove('hidden');
+  }
+
+  async function authenticateAdmin(){
+    const email=$('adminUser').value.trim();
+    const password=$('adminPass').value;
+    const btn=$('loginBtn');
+    $('loginError').textContent='';
+    btn.disabled=true;
+    btn.textContent='Entrando...';
+    try{
+      const {data,error}=await sb.auth.signInWithPassword({email,password});
+      if(error)throw error;
+      currentUser=data.user;
+      currentAdmin=await ensureAdminForClient(currentUser);
+      if(!currentAdmin){
+        await sb.auth.signOut();
+        currentUser=null;
+        throw new Error('Este usuário não está autorizado para o cliente '+CLIENTE_ID+'.');
+      }
+      $('loginModal').classList.add('hidden');
+      $('adminPass').value='';
+      await openConfig();
+    }catch(e){
+      console.error(e);
+      $('loginError').textContent=e.message||'Não foi possível entrar.';
+    }finally{
+      btn.disabled=false;
+      btn.textContent='Entrar';
+    }
+  }
+
+  async function signOutAdmin(){
+    if(sb) await sb.auth.signOut();
+    currentUser=null;currentAdmin=null;
+    $('config').classList.add('hidden');
+  }
+
+  async function checkExistingSession(){
+    if(!sb)return;
+    try{
+      const {data}=await sb.auth.getSession();
+      if(data && data.session){
+        const admin=await ensureAdminForClient(data.session.user);
+        if(admin){currentUser=data.session.user;currentAdmin=admin;}
+      }
+    }catch(e){console.warn('Sessão não restaurada:',e)}
+  }
+
+  function readFileAsDataURL(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(new Error('Erro ao ler imagem'));r.readAsDataURL(f)})}
+  async function compressImage(file){
+    const src=await readFileAsDataURL(file);const img=new Image();img.src=src;
+    await new Promise((res,rej)=>{img.onload=res;img.onerror=rej});
+    const max=1100,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
+    const c=document.createElement('canvas');c.width=Math.round(img.naturalWidth*scale);c.height=Math.round(img.naturalHeight*scale);
+    c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+    return c.toDataURL('image/jpeg',.82);
+  }
+  async function handleImageFile(input){
+    const f=input.files&&input.files[0];if(!f)return;
+    $('saveStatus').textContent='Preparando imagem...';
+    try{
+      pendingImage=await compressImage(f);pendingImageChanged=true;
+      $('imagePreview').src=pendingImage;$('imagePreview').style.display='block';
+      $('saveStatus').textContent='Imagem pronta. Clique em Salvar configuração.';
+    }catch(e){$('saveStatus').textContent='Não foi possível carregar a imagem.'}
+  }
+
+  $('gearBtn').onclick=openLogin;
+  $('closeLogin').onclick=()=>{$('loginModal').classList.add('hidden');$('loginError').textContent=''};
+  $('loginForm').onsubmit=e=>{e.preventDefault();authenticateAdmin()};
+  $('closeConfig').onclick=()=> $('config').classList.add('hidden');
+  $('logoutBtn').onclick=signOutAdmin;
+  $('galleryBtn').onclick=()=> $('fFile').click();
+  $('cameraFileBtn').onclick=()=> $('fCameraFile').click();
+  $('fFile').onchange=()=>handleImageFile($('fFile'));
+  $('fCameraFile').onchange=()=>handleImageFile($('fCameraFile'));
+
+  $('form').onsubmit=async function(e){
+    e.preventDefault();
+    $('saveStatus').textContent='Salvando...';
+    const s={handle:$('fHandle').value,hashtag:$('fHashtag').value,title:$('fTitle').value.trim(),message:$('fMessage').value.trim(),image:pendingImage||settings.image||''};
+    const ok=await saveSettings(s);
+    if(ok)setTimeout(()=>$('config').classList.add('hidden'),900);
+  };
+
+  $('start').onclick=startCamera;
+  $('flip').onclick=async()=>{facing=facing==='user'?'environment':'user';await startCamera()};
+  $('capture').onclick=capturePhoto;
+  $('download').onclick=downloadPhoto;
+  $('share').onclick=sharePhoto;
+  $('instagram').onclick=()=>window.open('https://www.instagram.com/','_blank');
+  $('copy').onclick=copyHashtag;
+  $('retake').onclick=()=> $('result').classList.add('hidden');
+  $('closeResult').onclick=()=> $('result').classList.add('hidden');
   $('welcomeYesBtn').onclick=()=>{$('welcomeModal').classList.add('hidden');startCamera()};
-  $('baker').onerror=()=> $('baker').classList.add('empty');$('baker').onload=()=> $('baker').classList.remove('empty');
-  const snow=$('snow');for(let i=0;i<25;i++){const f=document.createElement('i');f.textContent='❄';f.style.left=Math.random()*100+'%';f.style.fontSize=8+Math.random()*14+'px';f.style.animationDuration=5+Math.random()*8+'s';f.style.animationDelay=-Math.random()*10+'s';snow.appendChild(f)}
-  loadSettings();
+  $('baker').onerror=()=> $('baker').classList.add('empty');
+  $('baker').onload=()=> $('baker').classList.remove('empty');
+
+  const snow=$('snow');
+  for(let i=0;i<25;i++){const f=document.createElement('i');f.textContent='❄';f.style.left=Math.random()*100+'%';f.style.fontSize=8+Math.random()*14+'px';f.style.animationDuration=5+Math.random()*8+'s';f.style.animationDelay=-Math.random()*10+'s';snow.appendChild(f)}
+
+  if(sb){
+    sb.auth.onAuthStateChange(async (event,session)=>{
+      if(event==='SIGNED_OUT'){currentUser=null;currentAdmin=null;}
+    });
+  }
+
+  (async()=>{await loadSettings();await checkExistingSession()})();
 });
 </script>
 </body>
